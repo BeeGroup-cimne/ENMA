@@ -23,5 +23,5 @@ Following is the structure of this documentation. Each project using this archit
 
 1. **[Architecture of the platform](architecture/system_architecture.md)**
 2. **[Analytical modules workflow](modules/workflow.md)**
-3. **[Documentation for module developers]()**
+3. **[Documentation for module developers](developers/developers.md)**
    
