@@ -1,4 +1,4 @@
-# ENMA - Documentation for developers
+# ENMA - Documentation for module developers
 
 [Return home](../README.md)
 

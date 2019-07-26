@@ -1,4 +1,4 @@
-# ENMA module workflow
+# ENMA - Analytical modules workflow
 
 [Return home](../README.md)
 
