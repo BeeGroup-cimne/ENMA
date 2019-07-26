@@ -1,4 +1,4 @@
-<img src="Enma-greengrey.png" width="400" height="400"/>
+<img src="Enma-greengrey.png" width="400" height="400" class="center"/>
 
 # ENMA Big Data Platform
 
