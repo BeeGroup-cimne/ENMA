@@ -1,3 +1,4 @@
+![ENMA logo](Enma-greengrey.png)
 # ENMA Big Data Platform
 
 The ENMA platform was developed by CIMNE and it is a Big Data software which allows to storage, manage and analyze high amounts of information using the Map-Reduce paradigm.
