@@ -1,6 +1,6 @@
 # ENMA - Architecture of the platform
 
-[Return home](../Home.md)
+[Return home](../README.md)
 
 ENMA have been designed as an scalable architecture, combinign different components that will orchestrate the whole set. The following documentation describes the most important componets that interact in the plataform.
 

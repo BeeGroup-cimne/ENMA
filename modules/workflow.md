@@ -1,6 +1,6 @@
 # ENMA module workflow
 
-[Return home](../Home.md)
+[Return home](../README.md)
 
 ## 1. General description of the structure of a ENMA task
 
