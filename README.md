@@ -9,8 +9,6 @@ The ENMA platform was developed by CIMNE and it is a Big Data software which all
 
 ENMA was initially developed within the EMPOWERING project, which aimed at help consumers to save energy thanks to the information on their meter or bill. It was a co-founded project by the Intelligent Energy Europe Programme of the European Union.
 
-More information about this project could be found in the [empowering webpage](www.iee-empowering.eu).
-
 **Main objectives of the project**
 
 The overall aim of the project is to empower and aware consumers by involving, informing and helping them to take measures to save energy on the basis of their consumption meters or energy bills. This aim can be translated in to three general objectives:
