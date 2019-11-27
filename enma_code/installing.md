@@ -88,19 +88,20 @@ ambari-server start
     
 10. on the server running the hbase master, start the thrift hive server:
 ```bash
-sudo /usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift --bind <private_ip>
+/usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift --bind <private_ip>
 ```
 11. Install celery on the master node
 
 ```bash
-sudo apt install -y libmysqlclient-dev
-sudo apt install -y rabbitmq-server
-sudo apt install -y supervisor
-pip3 install celery
-pip3 install django
-pip3 install mysqlclient
-sudo apt install -y python-celery-common
+apt install -y libmysqlclient-dev
+apt install -y rabbitmq-server
+apt install -y supervisor
+pip install celery
+pip install django
+pip install mysqlclient
+apt install -y python3-celery-common
 ```
+
 12. Install the enma_project directories in the folder to run the project and set the following files:
     - envconfig.json: Set the info for the rabbitmq
     - celeryconfig.py: Set the info of the local celery database
@@ -112,10 +113,10 @@ sudo apt install -y python-celery-common
     ```
     
 13. Create the rabbitmq config as in envconfig.json
-```
-sudo rabbitmqctl add_user <username> <password>
-sudo rabbitmqctl  add_vhost <vhost>
-sudo rabbitmqctl set_permissions -p <vhost> <username> ".*" ".*" ".*"
+``` bash
+rabbitmqctl add_user <username> <password>
+rabbitmqctl  add_vhost <vhost>
+rabbitmqctl set_permissions -p <vhost> <username> ".*" ".*" ".*"
 ```
 
 14. Create the supervisorctl script.
@@ -131,7 +132,6 @@ autostart = True
 15. Create the HDFS user's home and add the user to the hadoop and hdfs group
 ```bash
     # create the user folder in hdfs
-    su - # access as root
     su hdfs # hdfs user has permission to create files
     hdfs dfs -mkdir /user/<user> # create the folder
     hdfs dfs -chown <user>:hdfs /user/<user> # change the owner
@@ -140,17 +140,26 @@ autostart = True
     # add the <user> to the hadoop and hdfs groups
     usermod -a -G hadoop <user>
     usermod -a -G hdfs <user>
-    exit
 ```
-
 16. Start supervisor and celery
 ``` bash
-sudo service supervisor start
-sudo supervisorctl reload
+service supervisor start
+supervisorctl reload
 ```
 
-17. Configure a project to be run in `celery_backend.py`
-    add the module's task in the `include` list
+17. Configure pip in `.bashrc` to avoid installing python packages globally for the user who will execute jobs
+```bash
+# pip config
+export PIP_REQUIRE_VIRTUALENV=true
+gpip() {
+    PIP_REQUIRE_VIRTUALENV="" pip "$@"
+}
+
+```
+
+18. Configure a project to be run in `celery_backend.py`
+    - add the module's task in the `include` list
+    - restart the celery server
 
 
 ## Add new nodes to cluster
