@@ -81,7 +81,10 @@ ambari-server start
         hbase.zookeeper.quorum : value in hbase->config->advanced
         zookeeper.znode.parent : value in hbase->config->advanced
 
-    5. configure yarn max memory to match the max memory of the node/ram
+10. After installation, change configuration of cluster:
+    1. configure yarn max memory to match the max memory of the node/ram
+    2. configure tez to close session when query is finished:
+        -tez.session.am.dag.submit.timeout.secs = 0
     
 10. on the server running the hbase master, start the thrift hive server:
 ```bash
@@ -124,13 +127,29 @@ user = <user>
 startsecs = 5
 autostart = True
 ```
-15. Start supervisor and celery
+
+15. Create the HDFS user's home and add the user to the hadoop and hdfs group
+```bash
+    # create the user folder in hdfs
+    su - # access as root
+    su hdfs # hdfs user has permission to create files
+    hdfs dfs -mkdir /user/<user> # create the folder
+    hdfs dfs -chown <user>:hdfs /user/<user> # change the owner
+    # go back to the root
+    exit
+    # add the <user> to the hadoop and hdfs groups
+    usermod -a -G hadoop <user>
+    usermod -a -G hdfs <user>
+    exit
+```
+
+16. Start supervisor and celery
 ``` bash
 sudo service supervisor start
 sudo supervisorctl reload
 ```
 
-16. Configure a project to be run in `celery_backend.py`
+17. Configure a project to be run in `celery_backend.py`
     add the module's task in the `include` list
 
 
