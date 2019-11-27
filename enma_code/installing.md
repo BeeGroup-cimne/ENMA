@@ -101,7 +101,7 @@ sudo apt install -y python-celery-common
 12. Install the enma_project directories in the folder to run the project and set the following files:
     - envconfig.json: Set the info for the rabbitmq
     - celeryconfig.py: Set the info of the local celery database
-    - celery_supervisor.sh: Set the path of the enma_projects folder
+    - celery_supervisor.sh: Set the path of the enma_projects folder and hadoop streaming home
     set permissions to execute `celery_supervisor.sh`
     
     ```bash
