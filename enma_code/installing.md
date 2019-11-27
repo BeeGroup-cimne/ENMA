@@ -96,9 +96,9 @@ sudo /usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift --bind <priv
 sudo apt install -y libmysqlclient-dev
 sudo apt install -y rabbitmq-server
 sudo apt install -y supervisor
-pip install celery
-pip install django
-pip install mysqlclient
+pip3 install celery
+pip3 install django
+pip3 install mysqlclient
 sudo apt install -y python-celery-common
 ```
 12. Install the enma_project directories in the folder to run the project and set the following files:
