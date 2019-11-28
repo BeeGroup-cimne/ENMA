@@ -96,10 +96,11 @@ ambari-server start
 apt install -y libmysqlclient-dev
 apt install -y rabbitmq-server
 apt install -y supervisor
-pip install celery
-pip install django
-pip install mysqlclient
-apt install -y python3-celery-common
+apt install -y python-celery-common
+pip3 install celery
+pip3 install django
+pip3 install mysqlclient
+pip3 install django-celery
 ```
 
 12. Install the enma_project directories in the folder to run the project and set the following files:
