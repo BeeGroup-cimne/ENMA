@@ -162,6 +162,10 @@ gpip() {
     - add the module's task in the `include` list
     - restart the celery server
 
+19. Install tez view and uninstall smartsense:
+    - install [tomcat](https://linuxize.com/post/how-to-install-tomcat-9-on-ubuntu-18-04/)
+    - install [tez view](https://tez.apache.org/tez-ui.html)
+    - uninstall [smartsense](https://docs.cloudera.com/HDPDocuments/SS1/SmartSense-1.2.0/bk_smartsense_admin/content/ambari_uninstall.html)
 
 ## Add new nodes to cluster
 
