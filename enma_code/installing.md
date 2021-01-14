@@ -1,58 +1,88 @@
 # Install Hadoop Cluster
 
-This tutorial will guide you to install the working hadoop cluster in a few easy steps
+This tutorial will guide you to install the working hadoop cluster in a few easy steps.
+
+*The instructions are updated for ubuntu 18.04(LTS) if using other versions some of the scripts migth need to be modified*
+
+##### Requirements before start
+- ssh access to all nodes
+- check that the OS version is supported for ambari on the [official link](https://docs.cloudera.com/HDPDocuments/Ambari-2.7.3.0/administering-ambari/content/amb_installing_ambari_agents_manually.html)
 
 ## Set up the cluster
+1. set the root password for all nodes and log as the root user
+    ```bash
+    sudo passwd
+    su -
+    ```
 
-1. set the root password for all nodes
-```bash
-sudo passwd
-su -
-```
+2. create public key in the admin node for root and configure the passwordless ssh in all hosts.
 
-2. create public key in master node for root and configure the passwordless ssh in all hosts.
+    *on admin node*
 
-*on master node*
-```bash
-ssh-keygen
-cat /root/.ssh/id_rsa.pub
-```
+    ```bash
+    ssh-keygen -t rsa -m PEM
+    cat /root/.ssh/id_rsa.pub
+    ```
 
-*on each host node (including master)*
-```bash
-echo/cat master_key >> /root/.ssh/authorized_keys
-```
+    *on each host node (including admin)*
 
-3. connect the node to the private network
-```bash
-ip link # list all ip interfaces
-ip address # check connected interfaces
-ifconfig <int> <private address> up # force connection to the ip address
-```
+    ```bash
+    echo/cat master_key >> /root/.ssh/authorized_keys
+    ```
 
-4. mount the HDD of the nodes if required
-```bash
-lsblk # to list all hdd
-fdisk /dev/sdb #create primary partition with 'n' and 'p' and save with 'w' 
-mkfs.ext3 /dev/sdb1 # to format the partition
-mkdir /hdd
-mount /dev/sdb1 /hdd
-e2label /dev/sdb1 hdd
-```
-update the /etc/fstab
-```
-LABEL=hdd       /hdd            ext3    defaults        1 2
-```
-5. create the file with all cluster hosts in the master node:
-```
-<ip> <hostname>
-<ip> <hostname>
-```
-Include all nodes in the script (master and workers)
+3. connect the node to the private network.
 
-6. copy the enma_setup to the master node
+    *Temporary connect to the network*
+    ```bash
+    ip link # list all ip interfaces
+    ip address # check connected interfaces
+    # force connection to the ip address until the node is restarted
+    ifconfig <interface> <private address> up  
+    ```
+    
+    *Permanently connect to the private network*
+    ```bash
+    vim /etc/netplan/50-cloud-init.yaml 
+    ```
+    *add the following text following yaml format*
+    ```yaml
+    network:
+        ethernets:
+            <network interface>:
+                dhcp4: false
+                addresses: [<private network>/<mask>]
+        version: 2
+    
+    ```
+    *accempt the changes*
+    ```bash
+    netplan apply
+    ```
 
-7. run the set_nodes.sh utility
+4. mount the HDD of the nodes
+    ```bash
+    lsblk # to list all hdd
+    fdisk /dev/sdb #create primary partition with 'n' and 'p' and save with 'w' 
+    mkfs.ext3 /dev/sdb1 # to format the partition
+    mkdir /hdd
+    mount /dev/sdb1 /hdd
+    e2label /dev/sdb1 hdd
+    ```
+    update the /etc/fstab file
+    ```
+    LABEL=hdd       /hdd            ext3    defaults        1 2
+    ```
+    
+5. create a `hosts_file` file with all cluster hosts in the admin node:
+    ```
+    <private ip> <hostname>
+    <private ip> <hostname>
+    ```
+    *Include all nodes in the file (master and workers and edges)*
+
+6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node
+
+7. run the set_nodes.sh script
     ```bash
     . enma_setup/set_nodes.sh hosts_file 
     ```
@@ -62,35 +92,126 @@ Include all nodes in the script (master and workers)
     3. sets the hostname of the nodes
     4. install the required packages
 
-8. on master node, install and start the ambari server and connect to <ip>:8080 to configure.
-```bash
-apt install -y ambari-server
-ambari-server setup
-ambari-server start
-```
-9. During installation take into account:
-    1. download mysql-connector-java.jar (for hive).
+8. on admin node, install and start the ambari server and connect to <ip>:8080 to configure.
     ```bash
-    wget url
-    dpkg -i path_to_deb_file
+    apt install -y ambari-server
+    ambari-server setup
+    ambari-server start
     ```
-    2. set-up ambari to get it. path usually in /usr/share/java/mysql.connector.jar (pkg name)
-    3. change the DNS port to 530 in yarn
-    4. Add hive property to connect to hbase properly(matching values with hbase config)
-        - In hive->config->advanced-> custom hive-site.xml
-        hbase.zookeeper.quorum : value in hbase->config->advanced
-        zookeeper.znode.parent : value in hbase->config->advanced
+    *During installation take into account:*
 
-10. After installation, change configuration of cluster:
-    1. configure yarn max memory to match the max memory of the node/ram
-    2. configure tez to close session when query is finished:
+    1. download mysql-connector-java.jar.
+        ```bash
+        wget url
+        dpkg -i path_to_deb_file
+        ```
+    2. set-up ambari to get it. path usually in /usr/share/java/mysql.connector.jar (pkg name)
+    3. install mysql server for the required components
+    4. create mysql databases and users required for each component.
+    4. change the DNS port to 530 in yarn
+
+9. Last steps:
+    - [Set up the correct name for the hadoop public hostname](https://community.cloudera.com/t5/Community-Articles/Why-ambari-host-might-have-different-public-host-name-and/ta-p/246662)(only on openstack)
+    - change hdfs the *.http-address ip to 0.0.0.0
+    - [uninstall smartsense](https://docs.cloudera.com/HDPDocuments/SS1/SmartSense-1.2.0/bk_smartsense_admin/content/ambari_uninstall.html) (if not paying the subscription)
+    - install [tomcat](https://linuxize.com/post/how-to-install-tomcat-9-on-ubuntu-18-04/)
+    - install [tez view](https://tez.apache.org/tez-ui.html)
+
+## Connect HBASE with HIVE
+    
+1. Add hive property to connect to hbase properly(matching values with hbase config)
+
+    *In hive->config->advanced-> custom hive-site.xml*
+    
+        hbase.zookeeper.quorum : value in hbase->config->advanced
+        
+        zookeeper.znode.parent : value in hbase->config->advanced
+     
+2. On the server running the hbase master, start the thrift hive server:
+    ```bash
+    /usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift --bind <private_ip>
+    ```
+## Create users 
+1. Create the HDFS user's home and add the user to the hadoop and hdfs group
+    ```bash
+    # create the user folder in hdfs
+    su hdfs # hdfs user has permission to create files
+    hdfs dfs -mkdir /user/<user> # create the folder
+    hdfs dfs -chown <user>:hdfs /user/<user> # change the owner
+    # go back to the root
+    exit
+    # add the <user> to the hadoop and hdfs groups
+    usermod -a -G hadoop <user>
+    usermod -a -G hdfs <user>
+    ```
+2. Configure pip in `.bashrc` to avoid installing python packages globally for the user who will execute jobs. Do it as user, not root.       
+   ```bash
+    # pip config
+    export PIP_REQUIRE_VIRTUALENV=true
+    gpip() {
+        PIP_REQUIRE_VIRTUALENV="" pip "$@"
+    }
+    gpip3(){
+        PIP_REQUIRE_VIRTUALENV="" pip3 "$@"
+    }
+    ```
+
+## Security
+
+1. install [kerberos](https://docs.cloudera.com/HDPDocuments/HDP2/HDP-2.6.1/bk_security/content/configuring_amb_hdp_for_kerberos.html)
+
+2. Create the principals for the users in hadoop.
+    - Create the hdfs user principal
+
+        ```kadmin:  addprinc hdfs@REALM.COM```
+    - Repeat [step 1 in Create users](#create-users) (logging in as hdfs principal).
+    - Create a principal in kerberos with the same name: 
+    
+        ```kadmin:  addprinc username@REALM.COM```
+    
+3. Generate the certificate for all nodes using certbot.
+    *On admin node*
+    ```bash
+    . enma_setup/run_on_nodes.sh hosts_file "sudo snap install core; sudo snap refresh core"
+    . enma_setup/run_on_nodes.sh hosts_file "sudo snap install --classic certbot"
+    . enma_setup/run_on_nodes.sh hosts_file "sudo ln -s /snap/bin/certbot /usr/bin/certbot"
+    ```
+    *On all nodes*
+    ```bash
+    sudo certbot certonly --standalone
+    ````
+    
+4. [Set the ambari server under https](https://docs.cloudera.com/HDPDocuments/Ambari-2.1.2.1/bk_Ambari_Security_Guide/content/_optional_set_up_ssl_for_ambari.html)
+    #########################################################################
+
+    **Currently not working**
+    *create the .p12 file with the obtained certs*
+    ```bash
+    #import the files in a jks keystore.
+    apt install -y openjdk-11-jre-headless
+    HOSTNAME=<host>
+    PASSWORD=<password>
+    #create p12 for the cert
+    openssl pkcs12 -export -out cert.p12 -in fullchain.pem -inkey privkey.pem -passout pass:$PASSWORD
+    #import it to the keystore
+    keytool -importkeystore -srckeystore cert.p12 -srcstoretype pkcs12 -srcalias 1 -srcstorepass $PASSWORD -destkeystore odin-hadoop.jks -deststoretype JKS  -destalias $HOSTNAME -deststorepass $PASSWORD    
+    ```
+    send jks file to each host and repeat
+     keytool -list -keystore odin-hadoop.jks -storepass $PASSWORD
+
+    #########################################################################
+
+## Optimization
+
+
+1. After installation, change configuration of cluster:
+    - configure yarn max memory to match the max memory of the node/ram
+    - configure tez to close session when query is finished:
         -tez.session.am.dag.submit.timeout.secs = 0
     
-10. on the server running the hbase master, start the thrift hive server:
-```bash
-/usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift --bind <private_ip>
-```
-11. Install celery on the master node
+
+## Set up the project environment
+11. Install celery on the admin node
 
 ```bash
 apt install -y libmysqlclient-dev
@@ -120,7 +241,7 @@ rabbitmqctl  add_vhost <vhost>
 rabbitmqctl set_permissions -p <vhost> <username> ".*" ".*" ".*"
 ```
 
-14. Create the supervisorctl script.
+14. Create the supervisorctl script (celery.conf).
 ``` bash
 [program:celery]
 directory=<enma_project_folder>
@@ -130,42 +251,19 @@ startsecs = 5
 autostart = True
 ```
 
-15. Create the HDFS user's home and add the user to the hadoop and hdfs group
-```bash
-    # create the user folder in hdfs
-    su hdfs # hdfs user has permission to create files
-    hdfs dfs -mkdir /user/<user> # create the folder
-    hdfs dfs -chown <user>:hdfs /user/<user> # change the owner
-    # go back to the root
-    exit
-    # add the <user> to the hadoop and hdfs groups
-    usermod -a -G hadoop <user>
-    usermod -a -G hdfs <user>
-```
+
 16. Start supervisor and celery
 ``` bash
 service supervisor start
 supervisorctl reload
 ```
 
-17. Configure pip in `.bashrc` to avoid installing python packages globally for the user who will execute jobs
-```bash
-# pip config
-export PIP_REQUIRE_VIRTUALENV=true
-gpip() {
-    PIP_REQUIRE_VIRTUALENV="" pip "$@"
-}
 
-```
 
 18. Configure a project to be run in `celery_backend.py`
     - add the module's task in the `include` list
     - restart the celery server
 
-19. Install tez view and uninstall smartsense:
-    - install [tomcat](https://linuxize.com/post/how-to-install-tomcat-9-on-ubuntu-18-04/)
-    - install [tez view](https://tez.apache.org/tez-ui.html)
-    - uninstall [smartsense](https://docs.cloudera.com/HDPDocuments/SS1/SmartSense-1.2.0/bk_smartsense_admin/content/ambari_uninstall.html)
 
 ## Add new nodes to cluster
 
@@ -177,7 +275,7 @@ su -
 
 2. add public key and configure the passwordless ssh in the new hosts.
 
-*on master node*
+*on admin node*
 ```bash
 cat /root/.ssh/id_rsa.pub
 ```
@@ -194,12 +292,12 @@ ip address # check connected interfaces
 ifconfig <int> <private address> up # force connection to the ip address
 ```
 
-4. update the file with the new cluster hosts in the master node:
+4. update the file with the new cluster hosts in the admin node:
 ```
 <ip> <hostname>
 <ip> <hostname>
 ```
-Include all nodes in the script (master and workers)
+Include all nodes in the script (admin, master and workers)
 
 5. run the set_nodes.sh utility
 ```bash
@@ -211,7 +309,7 @@ This script has the utility to set-up all the hosts through ssh
 3. sets the hostname of the nodes
 4. install the required packages
 
-6. connect to master:8080 to configure the new node
+6. connect to <ip>:8080 to configure the new node
 
 
 # Description of enma_setup
@@ -226,7 +324,7 @@ Following is a brief description on the scripts
     2. enma_setup/hosts_utilities/update_hosts.sh: Updates the original hosts with the new hosts files passed as parameter.
 
 2. install.sh 
-    install all required packages for setting up the ambari server and 
+    install all required packages for setting up the ambari server 
 
 3. set_nodes.sh
     main installation script that:
@@ -236,81 +334,3 @@ Following is a brief description on the scripts
 
 4. run_on_nodes.sh
     utility to run commands on all nodes
-
-#### enma_setup code
-hosts_utils/set_up.sh
-```bash
-#! /bin/bash
-
-#copy /etc/hosts as backup
-
-if ! test -f /opt/hosts_utils/original.hosts
-    then
-        mkdir /opt/hosts_utils
-        cp /etc/hosts /opt/hosts_utils/original.hosts
-fi
-```
-hosts_utils/update_hosts.sh
-```bash
-#! /bin/bash
-cat /opt/hosts_utils/original.hosts $1 > /etc/hosts
-```
-install.sh
-```bash
-sudo apt update
-sudo apt install -y python
-sudo apt install -y python-dev
-sudo apt install -y openssh-client
-sudo apt install -y curl
-sudo apt install -y unzip
-sudo apt install -y tar
-sudo apt install -y wget
-sudo apt install -y build-essential
-sudo apt install -y manpages-dev
-sudo apt install -y python-pip
-sudo apt install -y python3-pip
-sudo apt install -y libsasl2-dev
-sudo apt install -y python-tk
-sudo apt install -y virtualenv
-sudo apt install -y libssl-dev 
-sudo apt install -y libffi-dev 
-sudo apt install -y libxml2-dev 
-sudo apt install -y libxslt1-dev 
-sudo apt install -y zlib1g-dev 
-
-sudo ulimit -n 10000
-sudo apt install -y ntp
-sudo update-rc.d ntp defaults
-# change for other linux versions
-sudo wget -O /etc/apt/sources.list.d/ambari.list http://public-repo-1.hortonworks.com/ambari/ubuntu18/2.x/updates/2.7.3.0/ambari.list
-sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com B9733A7A07513CAD
-sudo apt-get update
-```
-set_nodes.sh
-```bash
-#! /bin/bash
-while read p
-    do 
-        host=`echo $p|cut -d" " -f1`
-        name=`echo $p|cut -d" " -f2`
-        echo "setting up $name"
-        ssh-keyscan -H $host >> /root/.ssh/known_hosts
-        scp -r enma_setup $host:./node_setup
-        ssh -n $host ". node_setup/hosts_utils/set_up.sh"
-        ssh -n $host "hostname $name" 
-        scp $1 $host:.
-        ssh -n $host ". node_setup/hosts_utils/update_hosts.sh $1"
-        ssh -n $host ". node_setup/install.sh"
-           done < $1
-```
-run_on_nodes.sh
-```bash
-#! /bin/bash
-while read p
-    do 
-        host=`echo $p|cut -d" " -f1`
-        name=`echo $p|cut -d" " -f2`
-        echo "running on $name"
-        ssh -n $host "$2"
-           done < $1
-```

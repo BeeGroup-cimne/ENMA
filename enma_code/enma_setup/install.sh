@@ -19,11 +19,20 @@ sudo apt install -y libffi-dev
 sudo apt install -y libxml2-dev
 sudo apt install -y libxslt1-dev
 sudo apt install -y zlib1g-dev
+sudo apt install -y ifupdown2
+sudo apt install -y docker.io
+sudo apt install -y chrony
 
 sudo ulimit -n 10000
-sudo apt install -y ntp
-sudo update-rc.d ntp defaults
+sudo systemctl enable chronyd
 # change for other linux versions
 sudo wget -O /etc/apt/sources.list.d/ambari.list http://public-repo-1.hortonworks.com/ambari/ubuntu18/2.x/updates/2.7.3.0/ambari.list
 sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com B9733A7A07513CAD
 sudo apt-get update
+
+sudo mkdir /etc/docker
+
+echo "{
+        "live-restore" : false,
+        "debug" : true
+ }" >> /etc/docker/daemon.json

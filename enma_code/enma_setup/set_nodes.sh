@@ -8,6 +8,7 @@ while read p
 		scp -r enma_setup $host:./node_setup
 		ssh -n $host ". node_setup/hosts_utils/set_up.sh"
 		ssh -n $host "hostname $name"
+		ssh -n $host "echo $name > /etc/hostname"
 		scp $1 $host:.
 		ssh -n $host ". node_setup/hosts_utils/update_hosts.sh $1"
 		ssh -n $host ". node_setup/install.sh"
