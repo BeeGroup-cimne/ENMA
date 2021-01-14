@@ -184,7 +184,7 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
 4. [Set the ambari server under https](https://docs.cloudera.com/HDPDocuments/Ambari-2.1.2.1/bk_Ambari_Security_Guide/content/_optional_set_up_ssl_for_ambari.html)
     #########################################################################
 
-    **Currently not working**
+    **Currently not working (Is for the complete HTTPS connection with the nodes)**
     *create the .p12 file with the obtained certs*
     ```bash
     #import the files in a jks keystore.
@@ -197,7 +197,7 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     keytool -importkeystore -srckeystore cert.p12 -srcstoretype pkcs12 -srcalias 1 -srcstorepass $PASSWORD -destkeystore odin-hadoop.jks -deststoretype JKS  -destalias $HOSTNAME -deststorepass $PASSWORD    
     ```
     send jks file to each host and repeat
-     keytool -list -keystore odin-hadoop.jks -storepass $PASSWORD
+    keytool -list -keystore odin-hadoop.jks -storepass $PASSWORD
 
     #########################################################################
 
