@@ -18,16 +18,15 @@ export KRB5_CONFIG=/etc/krb5.conf
 vars="YARN_CONTAINER_RUNTIME_TYPE=docker"
 vars="$vars,YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID"
 vars="$vars,YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS"
-# vars="$vars,YARN_CONTAINER_RUNTIME_DOCKER_RUN_PRIVILEGED_CONTAINER=true"
-# vars="$vars,YARN_CONTAINER_RUNTIME_DOCKER_RUN_OVERRIDE_DISABLE=true"
 
 hdfs dfs -rm -r $OUTPUT
 
 mapred streaming \
 	-Dyarn.app.mapreduce.am.env=$vars \
 	-Dmapreduce.map.env=$vars \
+	-Dmapred.map.max.attempts=1 \
 	-Dmapreduce.reduce.env=$vars \
 	-Djava.security.krb5.conf=$KRB5_CONFIG \
-	-mapper "Rscript R/mapper.R" \
+	-mapper "Rscript /app/R/mapper.R" \
 	-input $INPUT \
 	-output $OUTPUT
