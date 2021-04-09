@@ -28,7 +28,6 @@ docker build -t local/rbaseline-docker:latest .
 
 ```bash
 cat data/30952 | docker run -i local/rbaseline-docker:latest Rscript /app/R/mapper.R | docker run -i local/rbaseline-docker:latest Rscript /app/R/reducer.R '{ "company_id": 2397868878, "timezone": "Europe/Madrid", "start": "2020-01-01 00:00:00", "end": "2020-12-31 23:59:59" }'
-
 ```
 
 ## Save docker image and copy to hdfs
@@ -56,5 +55,3 @@ kinit
 ## Launch docker on YARN
 
 - `yarn.sh`
-- `yarn_jar.sh`
-- `yarn_mapred_streaming.sh`
