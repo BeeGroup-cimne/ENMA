@@ -24,9 +24,7 @@ hdfs dfs -rm -r $OUTPUT
 mapred streaming \
 	-Dyarn.app.mapreduce.am.env=$vars \
 	-Dmapreduce.map.env=$vars \
-	-Dmapreduce.map.max.attempts=1 \
 	-Dmapreduce.reduce.env=$vars \
-	-Dmapreduce.reduce.max.attempts=1 \
 	-Djava.security.krb5.conf=$KRB5_CONFIG \
 	-mapper "Rscript /app/R/mapper.R" \
 	-reducer "Rscript /app/R/reducer.R '{ \"company_id\": 2397868878, \"timezone\": \"Europe/Madrid\", \"start\": \"2020-01-01 00:00:00\", \"end\": \"2020-12-31 23:59:59\" }'" \
