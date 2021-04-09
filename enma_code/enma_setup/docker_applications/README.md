@@ -27,7 +27,8 @@ docker build -t local/rbaseline-docker:latest .
 ## Test Docker locally
 
 ```bash
-cat data/30952 | docker run -i local/rbaseline-docker:latest Rscript R/mapper.R
+cat data/30952 | docker run -i local/rbaseline-docker:latest Rscript /app/R/mapper.R | docker run -i local/rbaseline-docker:latest Rscript /app/R/reducer.R '{ "company_id": 2397868878, "timezone": "Europe/Madrid", "start": "2020-01-01 00:00:00", "end": "2020-12-31 23:59:59" }'
+
 ```
 
 ## Save docker image and copy to hdfs
