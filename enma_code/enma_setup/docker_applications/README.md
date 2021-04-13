@@ -19,6 +19,8 @@ newgrp docker
 
 ## Build docker image from source
 
+Sample `Dockerfile` is included with `jdk` and `kerberos` client installed needed to work.
+
 ```bash
 cd rbaseline-docker
 docker build -t local/rbaseline-docker:latest .
