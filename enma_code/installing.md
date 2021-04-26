@@ -121,6 +121,11 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     - install [tomcat](https://linuxize.com/post/how-to-install-tomcat-9-on-ubuntu-18-04/)
     - install [tez view](https://tez.apache.org/tez-ui.html)
 
+*If you face errors while starting the ambari-metrics application, remove previous data and restart the service*.
+```bash
+rm -rf /var/lib/ambari-metrics-collector
+```
+
 ## Connect HBASE with HIVE
     
 1. Add hive property to connect to hbase properly(matching values with hbase config)
