@@ -253,8 +253,22 @@ hadoop.proxyuser.hbase.hosts=*
         -tez.session.am.dag.submit.timeout.secs = 0
     
 
+## Set up docker for launching applications
+
+1. [Manage Docker as non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+
+run the following commands on all nodes. You can use the "run on nodes utility"
+```bash
+USER=<non root user to add to the docker group>
+source enma_setup/run_on_nodes.sh hosts_file "groupadd docker&usermod -aG docker $USER&newgrp docker"
+```
+2. [Configure Docker to start on boot](https://docs.docker.com/engine/install/linux-postinstall/#configure-docker-to-start-on-boot)
+```bash
+source enma_setup/run_on_nodes.sh hosts_file "systemctl enable docker.service"
+```
+3. [Launching Applications Using Docker Containers](https://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/DockerContainers.html)
 ## Set up the project environment
-11. Install celery on the admin node
+1. Install celery on the admin node
 
 ```bash
 apt install -y libmysqlclient-dev
@@ -267,7 +281,7 @@ pip3 install mysqlclient
 pip3 install django-celery
 ```
 
-12. Install the enma_project directories in the folder to run the project and set the following files:
+2. Install the enma_project directories in the folder to run the project and set the following files:
     - envconfig.json: Set the info for the rabbitmq
     - celeryconfig.py: Set the info of the local celery database
     - celery_supervisor.sh: Set the path of the enma_projects folder and hadoop streaming home
@@ -277,14 +291,14 @@ pip3 install django-celery
     chmod 0755 celery_supervisor.sh
     ```
     
-13. Create the rabbitmq config as in envconfig.json
+3. Create the rabbitmq config as in envconfig.json
 ``` bash
 rabbitmqctl add_user <username> <password>
 rabbitmqctl  add_vhost <vhost>
 rabbitmqctl set_permissions -p <vhost> <username> ".*" ".*" ".*"
 ```
 
-14. Create the supervisorctl script (celery.conf).
+4. Create the supervisorctl script (celery.conf).
 ``` bash
 [program:celery]
 directory=<enma_project_folder>
@@ -295,7 +309,7 @@ autostart = True
 ```
 
 
-16. Start supervisor and celery
+5. Start supervisor and celery
 ``` bash
 service supervisor start
 supervisorctl reload
@@ -303,7 +317,7 @@ supervisorctl reload
 
 
 
-18. Configure a project to be run in `celery_backend.py`
+6. Configure a project to be run in `celery_backend.py`
     - add the module's task in the `include` list
     - restart the celery server
 
