@@ -110,7 +110,11 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     4. create mysql databases and users required for each component.
     4. change the DNS port to 530 in yarn
 
-9. Last steps:
+9. Set hadoop-streaming.jar to a folder that can be found by mrjob.
+   ```bash
+   cp /usr/hdp/<version>/hadoop-mapreduce/hadoop-streaming.jar /home/hadoop/contrib/hadoop-streaming.jar
+   ```
+10. Last steps:
     - [Set up the correct name for the hadoop public hostname](https://community.cloudera.com/t5/Community-Articles/Why-ambari-host-might-have-different-public-host-name-and/ta-p/246662)(only on openstack)
     - change hdfs the *.http-address ip to 0.0.0.0
     - [uninstall smartsense](https://docs.cloudera.com/HDPDocuments/SS1/SmartSense-1.2.0/bk_smartsense_admin/content/ambari_uninstall.html) (if not paying the subscription)
