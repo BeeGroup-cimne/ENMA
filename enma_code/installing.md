@@ -135,6 +135,29 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     ```bash
     /usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift --bind <private_ip>
     ```
+   For kerberized cluster set also the credentials for the thrift server:
+    
+   
+In custom hbase-site.xml:
+    
+```bash
+hbase.thrift.security.qop=auth
+hbase.thrift.support.proxyuser=true
+hbase.regionserver.thrift.http=true
+hbase.thrift.keytab.file=/etc/security/keytabs/hbase.service.keytab 
+hbase.thrift.kerberos.principal=hbase/_HOST@HWX.COM 
+hbase.security.authentication.spnego.kerberos.keytab=/etc/security/keytabs/spnego.service.keytab 
+hbase.security.authentication.spnego.kerberos.principal=HTTP/_HOST@HDP.COM
+```
+In custom core-site.xml:
+
+```bash
+hadoop.proxyuser.hbase.groups=*
+hadoop.proxyuser.hbase.hosts=*
+```
+
+*font: https://community.cloudera.com/t5/Community-Articles/Start-and-test-HBASE-thrift-server-in-a-kerberised/tac-p/244673*
+
 ## Create users 
 1. Create the HDFS user's home and add the user to the hadoop and hdfs group
     ```bash
