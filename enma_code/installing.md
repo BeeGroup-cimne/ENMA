@@ -214,6 +214,17 @@ hadoop.proxyuser.hbase.hosts=*
     ````
     
 4. [Set the ambari server under https](https://docs.cloudera.com/HDPDocuments/Ambari-2.1.2.1/bk_Ambari_Security_Guide/content/_optional_set_up_ssl_for_ambari.html)
+        
+    To set the ambari-server to renew the certificates automatically using certbot we have to create a script in the deploy hook folder:
+    ```bash
+    cd /etc/letsencrypt/renewal-hooks/deploy
+    CERT=<path to fullchain cert>
+    KEY=<path to private key>
+    PASSWD=<private key password>
+    printf "#! /bin/bash\nambari-server stop\nambari-server setup-security --security-option=setup-https --api-ssl=true --api-ssl-port=8443 --import-cert-path=$CERT --import-key-path=$KEY --pem-password=\"$PASSWD\"\nambari-server start\n" > restart_ambari.sh
+    chmod 0775 restart_ambari.sh
+    ```
+    *st the variables depending on your system*
     #########################################################################
 
     **Currently not working (Is for the complete HTTPS connection with the nodes)**
