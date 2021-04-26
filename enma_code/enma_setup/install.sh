@@ -24,6 +24,7 @@ sudo apt install -y docker.io
 sudo apt install -y chrony
 
 sudo ulimit -n 10000
+printf "*\thard\tnofile\t10000\n*\tsoft\tnofile\t10000" >> /etc/security/limits.conf
 sudo systemctl enable chronyd
 # change for other linux versions
 sudo wget -O /etc/apt/sources.list.d/ambari.list http://public-repo-1.hortonworks.com/ambari/ubuntu18/2.x/updates/2.7.3.0/ambari.list
