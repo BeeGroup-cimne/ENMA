@@ -32,4 +32,4 @@ apt-key adv --recv-keys --keyserver keyserver.ubuntu.com B9733A7A07513CAD
 apt-get update
 
 mkdir /etc/docker
-printf "{\n\t\"live-restore\": false,\n\t\"debug": true\n}" > /etc/docker/daemon.json
+printf "{\n\t\"live-restore\": false,\n\t\"debug\": true\n}" > /etc/docker/daemon.json
