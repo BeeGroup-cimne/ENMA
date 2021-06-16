@@ -61,7 +61,7 @@ done < <(tail -n +2 hosts_file)
 while read p
 do
   host=`echo $p|cut -d" " -f1`
-	ssh -n $host ". node_setup/install_scripts/set_firewall $PRIVATE_INT $VPN_INT"
+	ssh -n $host ". node_setup/install_scripts/set_firewall.sh $PRIVATE_INT $VPN_INT"
 done < hosts_file
 
 echo "installation finished."
