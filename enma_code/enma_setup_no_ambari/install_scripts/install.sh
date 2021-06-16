@@ -21,7 +21,6 @@ apt install -y docker.io
 apt install -y chrony
 apt install -y openjdk-8-jdk
 apt install -y nmap
-apt install -y openvpn
 apt install -y ufw
 
 # prepare for hadoop

@@ -52,6 +52,7 @@ while read p
 do
   host=`echo $p|cut -d" " -f1`
   name=`echo $p|cut -d" " -f2|cut -d"." -f1`
+  ssh -n $host "apt install -y openvpn"
   scp $USER_HOME/$name.ovpn $host:/etc/openvpn/client/$name.conf
   ssh -n $host "systemctl enable openvpn-client@$name.service"
   ssh -n $host "systemctl start openvpn-client@$name.service"
