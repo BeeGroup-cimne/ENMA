@@ -30,7 +30,7 @@ printf "*\thard\tnofile\t10000\n*\tsoft\tnofile\t10000" >> /etc/security/limits.
 systemctl enable chronyd
 
 # configure docker
-mkdir /etc/docker
+mkdir -p /etc/docker
 printf "{\n\t\"live-restore\": false,\n\t\"debug\": true\n}" > /etc/docker/daemon.json
 sudo groupadd docker
 

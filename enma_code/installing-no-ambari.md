@@ -33,6 +33,8 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
    ip address
    ```
    If they are not, connect them depending on their linux distribution.
+   
+   *Check the name on the private network interface*
 
 4. mount the HDD of the nodes
     ```bash
