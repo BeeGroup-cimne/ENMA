@@ -59,8 +59,10 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
 
 6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node
 
-7- run the setup utility that will prepare each node for hadoop
-
+7- run the setup utility that will prepare each node for hadoop with bash
+    ```
+    bash enma_setup/set_nodes.sh hosts_file
+    ```
     on all nodes:
     - install the necessari packages
     - set hostnames and hosts
@@ -73,6 +75,14 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     on all nodes:
     - connect to the vpn
     - configure the firewall to block all connections but port 22 in external ip
+
+reboot all nodes:
+
+tac hosts_file > rev
+bash enma_setup/run_on_nodes.sh rev reboot
+
+
+./run_on_nodes "reboot"
 
 8- install hadoop
     - download tar.gz and unpack

@@ -40,9 +40,8 @@ do
   export MENU_OPTION="1"
   export PASS="1"
   bash openvpn-install.sh
-  sed 's/dev tun/dev '"$VPN_INT"'/g' < $USER_HOME/$CLIENT.conf > $USER_HOME/$CLIENT.tmp
-  mv $USER_HOME/$CLIENT.tmp $USER_HOME/$CLIENT.conf
+  sed 's/dev tun/dev '"$VPN_INT"'/g' < $USER_HOME/$CLIENT.ovpn > $USER_HOME/$CLIENT.tmp
+  mv $USER_HOME/$CLIENT.tmp $USER_HOME/$CLIENT.ovpn
   echo "ifconfig-push ${VPN_IP/%.0/.$ip} $VPN_MASK" >/etc/openvpn/ccd/$CLIENT
   ip=$((ip +1))
 done
-
