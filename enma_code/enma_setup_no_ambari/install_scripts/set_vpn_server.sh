@@ -7,6 +7,11 @@ export AUTO_INSTALL=y
 export CLIENT=${cn[0]}
 bash openvpn-install.sh
 
+while [ ! -f /etc/openvpn/server.conf ] ;
+do
+      sleep 2
+done
+
 #remove push-dns from configuration
 sed '/^push/d' < /etc/openvpn/server.conf> /etc/openvpn/server.tmp
 mv /etc/openvpn/server.tmp /etc/openvpn/server.conf
