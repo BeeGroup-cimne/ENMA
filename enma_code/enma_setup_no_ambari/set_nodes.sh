@@ -45,8 +45,11 @@ do
   client_names+=($name)
 done < <(tail -n +2 $1)
 
-. node_setup/install_scripts/set_vpn_server.sh ${client_names[@]}
+. node_setup/install_scripts/set_vpn/install_vpn_server.sh ${client_names[0]}
+. node_setup/install_scripts/set_vpn/create_vpn_clients.sh ${client_names[@]}
+. node_setup/install_scripts/set_vpn/vpn_configuration.sh ${client_names[@]}
 
+systemctl restart openvpn
 #deploy all files in /etc/openvpn/client/file.conf and start openvpn
 while read p
 do
