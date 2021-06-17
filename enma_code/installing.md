@@ -90,19 +90,6 @@ This folder must be placed in the root directory "/".
 ```
 mkdir -p /hadoop_stack
 ```
-create the group `hadoop` to give permissions to the applications.
-```bash
-bash enma_setup/run_on_nodes.sh rev "groupadd hadoop"
-```
-
-set permissions of the /hdd
-
-```bash
-bash enma_setup/run_on_nodes.sh rev "chown -R root:hadoop /hdd"
-```
-
-Check compatibility between all hadoop components.
-
 
 #### Install HADOOP Core
 - download stable hadoop release binary from oficial [webpage](https://hadoop.apache.org/):
@@ -113,16 +100,22 @@ Check compatibility between all hadoop components.
 - set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
 - set a `masters` file with the master information:
   ```
-  <binary> <service> <node>
+  <user> <binary> <service> <node>
   ...
-  bin/hdfs namenode master1
+  hdfs bin/hdfs namenode master1
   ```
-- send the folder to all nodes
-- set permissions to folder to the group hadoop
-    ```bash
-    bash enma_setup/run_on_nodes.sh rev "chown -R root:hadoop /hadoop_stack"
-    ```
-    
+- set the variables in the setup script `hadoop_stack_installation -> deploy_hadoop.sh`
+  - HADOOP_STACK_DIR
+  - HADOOP_ENV
+  - HADOOP_DATA_DIR
+- run the script:
+  ```
+  bash hadoop_stack_installation/deploy_hadoop.sh hosts_file
+  ```
+    - it copies the folder to all nodes
+    - sets the permissions groups and environment variables
+    - creates the users to run hadoop
+        
 #### Install HBASE
 - download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):
 - untar the file in the `hadoop_stack` folder
