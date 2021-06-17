@@ -11,8 +11,13 @@ do
   host=`echo $p|cut -d" " -f1`
   ssh -n $host "mkdir -p $HADOOP_STACK_DIR"
   scp -r $APP_DEPLOY $host:$HADOOP_STACK_DIR
+done < <(tail -n +2 $1)
+
+while read p
+do
+  ssh -n $host "chown -R root:hadoop /hadoop_stack"
   for env in ${ENV_TO_SET[@]}
-  do
-    echo "export $env" >> /etc/bash.bashrc
-  done
+    do
+      echo "export $env" >> /etc/bash.bashrc
+    done
 done < $1
