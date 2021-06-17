@@ -10,9 +10,9 @@ while read p
 do
   host=`echo $p|cut -d" " -f1`
   ssh -n $host "mkdir -p $HADOOP_STACK_DIR"
-  scp -r $APP_DEPLOY $host:$APP_DEPLOY
+  scp -r $APP_DEPLOY $host:$HADOOP_STACK_DIR
   for env in ${ENV_TO_SET[@]}
   do
     echo "export $env" >> /etc/bash.bashrc
   done
-done
+done < $1
