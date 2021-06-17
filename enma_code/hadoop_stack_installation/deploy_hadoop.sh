@@ -23,6 +23,8 @@ do
   ssh -n $host "chown -R root:hadoop $HADOOP_STACK_DIR"
   ssh -n $host "chown -R root:hadoop $HADOOP_DATA_DIR"
   ssh -n $host "chmod -R 775 $HADOOP_DATA_DIR"
+  ssh -n $host "chmod -R 6050 $HADOOP_HOME/bin/container-executor"
+
   for env in ${ENV_TO_SET[@]}
     do
       ssh -n $host 'echo "export $env" >> /etc/bash.bashrc'
