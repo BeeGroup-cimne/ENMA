@@ -8,4 +8,5 @@ do
   export MENU_OPTION="1"
   export PASS="1"
   bash openvpn-install.sh
+  sleep 1
 done
