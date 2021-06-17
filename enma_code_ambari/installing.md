@@ -2,19 +2,21 @@
 
 This tutorial will guide you to install the working hadoop cluster in a few easy steps.
 
-*The instructions are updated for ubuntu 20.04(LTS) if using other versions some of the scripts migth need to be modified*
+*The instructions are updated for ubuntu 18.04(LTS) if using other versions some of the scripts migth need to be modified*
 
 ##### Requirements before start
 - ssh access to all nodes
+- check that the OS version is supported for ambari on the [official link](https://docs.cloudera.com/HDPDocuments/Ambari-2.7.3.0/administering-ambari/content/amb_installing_ambari_agents_manually.html)
 
 ## Set up the cluster
 1. set the root password for all nodes and log as the root user
     ```bash
     sudo passwd
-    sudo su -
+    su -
     ```
 
 2. create public key in the admin node for root and configure the passwordless ssh in all hosts.
+
     *on admin node*
 
     ```bash
@@ -25,16 +27,37 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     *on each host node (including admin)*
 
     ```bash
-    echo "<master_key>" >> /root/.ssh/authorized_keys
+    echo/cat master_key >> /root/.ssh/authorized_keys
     ```
 
-3. check if the nodes are connected on the fast private network.
-   ```
-   ip address
-   ```
-   If they are not, connect them depending on their linux distribution.
-   
-   *Check the name on the private network interface*
+3. connect the node to the private network.
+
+    *Temporary connect to the network*
+    ```bash
+    ip link # list all ip interfaces
+    ip address # check connected interfaces
+    # force connection to the ip address until the node is restarted
+    ifconfig <interface> <private address> up  
+    ```
+    
+    *Permanently connect to the private network*
+    ```bash
+    vim /etc/netplan/50-cloud-init.yaml 
+    ```
+    *add the following text following yaml format*
+    ```yaml
+    network:
+        ethernets:
+            <network interface>:
+                dhcp4: false
+                addresses: [<private network>/<mask>]
+        version: 2
+    
+    ```
+    *accempt the changes*
+    ```bash
+    netplan apply
+    ```
 
 4. mount the HDD of the nodes
     ```bash
@@ -52,60 +75,61 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     
 5. create a `hosts_file` file with all cluster hosts in the admin node:
     ```
-    <private fast ip> <private hostname>
-    <private fast ip> <private hostname>
+    <private ip> <hostname>
+    <private ip> <hostname>
     ```
-    *Include all nodes in the file (the administrator node must be the first one)*
+    *Include all nodes in the file (master and workers and edges, first node must be the admin node)*
 
 6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node
+*****
+untar in some /folder like hadoop_stack
+chmod -R 0775 /hadoop_stack/hadoop-3.3.0/logs
+chmod 6050 /hadoop_stack/hadoop-3.3.0/bin/container-executor
+chmod 6050 /hadoop_stack/hadoop-3.3.0/etc/hadoop/container-executor.cfg 
+chown root:hadoop /hadoop_stack/hadoop-3.3.0/etc/hadoop/container-executor.cfg
 
-7- run the setup utility that will prepare each node for hadoop with bash
+
+create users in hadoop (create user in all nodes, add groups and hdfs dfsadmin -refreshUserToGroupsMappings)
+
+
+apt install maven
+wget https://www-eu.apache.org/dist/ambari/ambari-2.7.5/apache-ambari-2.7.5-src.tar.gz (use the suggested mirror from above)
+tar xfvz apache-ambari-2.7.5-src.tar.gz
+cd apache-ambari-2.7.5-src
+mvn versions:set -DnewVersion=2.7.5.0.0
+ 
+pushd ambari-metrics
+mvn versions:set -DnewVersion=2.7.5.0.0
+popd
+
+7. run the set_nodes.sh script
+    ```bash
+    . enma_setup/set_nodes.sh hosts_file 
     ```
-    bash enma_setup/set_nodes.sh hosts_file
+    This script has the utility to set-up all the hosts through ssh
+    1. backup the /etc/hosts file in /opt/hosts_utils.
+    2. adds all the hosts of the file passed as parameter into /etc/hosts
+    3. sets the hostname of the nodes
+    4. install the required packages
+
+8. on admin node, install and start the ambari server and connect to <ip>:8080 to configure.
+    ```bash
+    apt install -y ambari-server
+    ambari-server setup
+    ambari-server start
     ```
-    on all nodes:
-    - install the necessari packages
-    - set hostnames and hosts
-    - set the limits in files and processes
-    - configure docker to be executed as non root and start on startup.
-    on admin node:
-    - set the VPN server
-    - create all vpn clients for each node
-    - send the certificate to each node
-    on all nodes:
-    - connect to the vpn
-    - configure the firewall to block all connections but port 22 in external ip
+    *During installation take into account:*
 
-reboot all nodes:
-
-tac hosts_file > rev
-bash enma_setup/run_on_nodes.sh rev reboot
-
-
-./run_on_nodes "reboot"
-
-8- install hadoop
-    - download tar.gz and unpack
-    - configure service
-    - send it to all nodes
-    - set up easy start
-9- install hbase
-    - download tar.gz and unpack
-    - configure service
-    - send it to all nodes
-    - set up easy start
-10- install hive
-    - download tar.gz and unpack
-    - configure service
-    - send it to all nodes
-    - set up easy start
-
-    - download mysql-connector-java.jar.
+    1. download mysql-connector-java.jar.
         ```bash
         wget url
         dpkg -i path_to_deb_file
         ```
-   
+    2. set-up ambari to get it. path usually in /usr/share/java/mysql.connector.jar (pkg name)
+    3. install mysql server for the required components
+    4. create mysql databases and users required for each component.
+    4. change the DNS port to 530 in yarn
+
 9. Set hadoop-streaming.jar to a folder that can be found by mrjob.
    ```bash
    cp /usr/hdp/<version>/hadoop-mapreduce/hadoop-streaming.jar /home/hadoop/contrib/hadoop-streaming.jar
@@ -387,14 +411,3 @@ Following is a brief description on the scripts
 
 4. run_on_nodes.sh
     utility to run commands on all nodes
-
-
-## install hadoop stack
-#mkdir hadoop_stack
-#while read app
-#do
-#  url_app=`echo $app|cut -d" " -f1`
-#	filename=`basename $url_app`
-#  wget -P hadoop_stack $url_app;
-#  tar -xzvf hadoop_stack/$filename -C hadoop_stack
-#done < hdp_version

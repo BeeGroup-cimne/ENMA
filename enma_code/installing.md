@@ -1,22 +1,21 @@
-# Install Hadoop Cluster
+# Install ENMA
 
 This tutorial will guide you to install the working hadoop cluster in a few easy steps.
 
-*The instructions are updated for ubuntu 18.04(LTS) if using other versions some of the scripts migth need to be modified*
-
-##### Requirements before start
-- ssh access to all nodes
-- check that the OS version is supported for ambari on the [official link](https://docs.cloudera.com/HDPDocuments/Ambari-2.7.3.0/administering-ambari/content/amb_installing_ambari_agents_manually.html)
+*The instructions are updated for ubuntu 20.04(LTS) if using other versions some of the scripts migth need to be modified*
 
 ## Set up the cluster
+### Requirements before start
+- ssh access to all nodes
+
+### Prepare the nodes 
 1. set the root password for all nodes and log as the root user
     ```bash
     sudo passwd
-    su -
+    sudo su -
     ```
 
 2. create public key in the admin node for root and configure the passwordless ssh in all hosts.
-
     *on admin node*
 
     ```bash
@@ -27,37 +26,16 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     *on each host node (including admin)*
 
     ```bash
-    echo/cat master_key >> /root/.ssh/authorized_keys
+    echo "<master_key>" >> /root/.ssh/authorized_keys
     ```
 
-3. connect the node to the private network.
-
-    *Temporary connect to the network*
-    ```bash
-    ip link # list all ip interfaces
-    ip address # check connected interfaces
-    # force connection to the ip address until the node is restarted
-    ifconfig <interface> <private address> up  
-    ```
-    
-    *Permanently connect to the private network*
-    ```bash
-    vim /etc/netplan/50-cloud-init.yaml 
-    ```
-    *add the following text following yaml format*
-    ```yaml
-    network:
-        ethernets:
-            <network interface>:
-                dhcp4: false
-                addresses: [<private network>/<mask>]
-        version: 2
-    
-    ```
-    *accempt the changes*
-    ```bash
-    netplan apply
-    ```
+3. check if the nodes are connected on the fast private network.
+   ```
+   ip address
+   ```
+   If they are not, connect them depending on their linux distribution.
+   
+   *Check the name on the private network interface*
 
 4. mount the HDD of the nodes
     ```bash
@@ -75,65 +53,106 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     
 5. create a `hosts_file` file with all cluster hosts in the admin node:
     ```
-    <private ip> <hostname>
-    <private ip> <hostname>
+    <private fast ip> <private hostname>
+    <private fast ip> <private hostname>
     ```
-    *Include all nodes in the file (master and workers and edges, first node must be the admin node)*
+    *Include all nodes in the file (the administrator node must be the first one)*
 
 6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node
-*****
-untar in some /folder like hadoop_stack
-chmod -R 0775 /hadoop_stack/hadoop-3.3.0/logs
-chmod 6050 /hadoop_stack/hadoop-3.3.0/bin/container-executor
-chmod 6050 /hadoop_stack/hadoop-3.3.0/etc/hadoop/container-executor.cfg 
-chown root:hadoop /hadoop_stack/hadoop-3.3.0/etc/hadoop/container-executor.cfg
 
-
-create users in hadoop (create user in all nodes, add groups and hdfs dfsadmin -refreshUserToGroupsMappings)
-
-
-apt install maven
-wget https://www-eu.apache.org/dist/ambari/ambari-2.7.5/apache-ambari-2.7.5-src.tar.gz (use the suggested mirror from above)
-tar xfvz apache-ambari-2.7.5-src.tar.gz
-cd apache-ambari-2.7.5-src
-mvn versions:set -DnewVersion=2.7.5.0.0
- 
-pushd ambari-metrics
-mvn versions:set -DnewVersion=2.7.5.0.0
-popd
-
-7. run the set_nodes.sh script
-    ```bash
-    . enma_setup/set_nodes.sh hosts_file 
+7. run the setup utility that will prepare each node for hadoop with bash
     ```
-    This script has the utility to set-up all the hosts through ssh
-    1. backup the /etc/hosts file in /opt/hosts_utils.
-    2. adds all the hosts of the file passed as parameter into /etc/hosts
-    3. sets the hostname of the nodes
-    4. install the required packages
-
-8. on admin node, install and start the ambari server and connect to <ip>:8080 to configure.
-    ```bash
-    apt install -y ambari-server
-    ambari-server setup
-    ambari-server start
+    bash enma_setup/set_nodes.sh hosts_file
     ```
-    *During installation take into account:*
+    this script will:
+    - on all nodes:
+        - install the necessari packages
+        - set hostnames and hosts
+        - set the limits in files and processes
+        - configure docker to be executed as non root and start on startup.
+    - on admin node:
+        - set the VPN server
+        - create all vpn clients for each node
+        - send the certificate to each node
+    - on all nodes:
+        - connect to the vpn
+        - configure the firewall to block all connections but port 22 in external ip
 
-    1. download mysql-connector-java.jar.
+8. reboot system to prepare for installing hadoop:
+    ```bash 
+    tac hosts_file > rev
+    bash enma_setup/run_on_nodes.sh rev reboot
+   ```
+
+### Install HADOOP STACK:
+To safely install hadoop stack applications, create a new folder `hadoop_stack` that will contain all the hadoop_stack binary. 
+This folder must be placed in the root directory "/".
+```
+mkdir -p /hadoop_stack
+```
+create the group `hadoop` to give permissions to the applications.
+```bash
+bash enma_setup/run_on_nodes.sh rev "groupadd hadoop"
+```
+
+set permissions of the /hdd
+
+```bash
+bash enma_setup/run_on_nodes.sh rev "chown -R root:hadoop /hdd"
+```
+
+Check compatibility between all hadoop components.
+
+
+#### Install HADOOP Core
+- download stable hadoop release binary from oficial [webpage](https://hadoop.apache.org/):
+- untar the file in the `hadoop_stack` folder
+  ```
+  tar -xzvf hadoop-x.y-z.tar.gz -C /hadoop_stack
+  ```
+- set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+- set a `masters` file with the master information:
+  ```
+  <binary> <service> <node>
+  ...
+  bin/hdfs namenode master1
+  ```
+- send the folder to all nodes
+- set permissions to folder to the group hadoop
+    ```bash
+    bash enma_setup/run_on_nodes.sh rev "chown -R root:hadoop /hadoop_stack"
+    ```
+    
+#### Install HBASE
+- download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):
+- untar the file in the `hadoop_stack` folder
+  ```
+  tar -xzvf apache-x.y-z.tar.gz -C /hadoop_stack
+  ```
+9- install hbase
+    - download tar.gz and unpack
+    - configure service
+    - send it to all nodes
+    - set up easy start
+
+### Install HIVE
+- download stable hadoop release binary from oficial [webpage](https://hive.apache.org/):
+- untar the file in the `hadoop_stack` folder
+  ```
+  tar -xzvf hive-x.y-z.tar.gz -C /hadoop_stack
+  ```
+10- install hive
+    - download tar.gz and unpack
+    - configure service
+    - send it to all nodes
+    - set up easy start
+
+    - download mysql-connector-java.jar.
         ```bash
         wget url
         dpkg -i path_to_deb_file
         ```
-    2. set-up ambari to get it. path usually in /usr/share/java/mysql.connector.jar (pkg name)
-    3. install mysql server for the required components
-    4. create mysql databases and users required for each component.
-    4. change the DNS port to 530 in yarn
-
-9. Set hadoop-streaming.jar to a folder that can be found by mrjob.
-   ```bash
-   cp /usr/hdp/<version>/hadoop-mapreduce/hadoop-streaming.jar /home/hadoop/contrib/hadoop-streaming.jar
-   ```
+   
 10. Last steps:
     - [Set up the correct name for the hadoop public hostname](https://community.cloudera.com/t5/Community-Articles/Why-ambari-host-might-have-different-public-host-name-and/ta-p/246662)(only on openstack)
     - change hdfs the *.http-address ip to 0.0.0.0
@@ -146,7 +165,7 @@ popd
 rm -rf /var/lib/ambari-metrics-collector
 ```
 
-## Connect HBASE with HIVE
+### Connect HBASE with HIVE
     
 1. Add hive property to connect to hbase properly(matching values with hbase config)
 
@@ -182,7 +201,7 @@ hadoop.proxyuser.hbase.hosts=*
 ```
 
 *font: https://community.cloudera.com/t5/Community-Articles/Start-and-test-HBASE-thrift-server-in-a-kerberised/tac-p/244673*
-
+***
 ## Create users 
 1. Create the HDFS user's home and add the user to the hadoop and hdfs group
     ```bash
@@ -411,3 +430,14 @@ Following is a brief description on the scripts
 
 4. run_on_nodes.sh
     utility to run commands on all nodes
+
+
+## install hadoop stack
+#mkdir hadoop_stack
+#while read app
+#do
+#  url_app=`echo $app|cut -d" " -f1`
+#	filename=`basename $url_app`
+#  wget -P hadoop_stack $url_app;
+#  tar -xzvf hadoop_stack/$filename -C hadoop_stack
+#done < hdp_version
