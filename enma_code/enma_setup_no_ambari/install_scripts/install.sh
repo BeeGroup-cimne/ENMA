@@ -22,6 +22,7 @@ apt install -y chrony
 apt install -y openjdk-8-jdk
 apt install -y nmap
 apt install -y ufw
+apt install -y openvpn
 
 # prepare for hadoop
 ulimit -n 10000
