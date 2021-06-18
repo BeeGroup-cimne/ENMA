@@ -1,7 +1,9 @@
 ! /bin/bash
 
+echo "write the user to create"
 read -r CLIENT
 
+sudo adduser $CLIENT
 export CLIENT=$CLIENT
 bash openvpn-install.sh
 while read p

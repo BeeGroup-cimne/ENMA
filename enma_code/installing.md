@@ -80,8 +80,8 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
 
 8. reboot system to prepare for installing hadoop:
     ```bash 
-    tac hosts_file > rev
-    bash enma_setup/run_on_nodes.sh rev reboot
+    tac hosts_file > hosts_file_rev
+    bash enma_setup/run_on_nodes.sh hosts_file_rev reboot
    ```
 
 ### Install HADOOP STACK:
@@ -117,11 +117,11 @@ mkdir -p /hadoop_stack
     - creates the users to run hadoop
 - On master node running namenode, format the hdfs
   ```
-  su hdfs -c "$HADOOP_HOME/bin/hdfs namenode -format
+  su hdfs -c "$HADOOP_HOME/bin/hdfs namenode -format"
   ```
 - Start hadoop
   ```
-  bash manage_hadoop/start_hadoop.sh start
+  bash manage_stack/manage_hadoop.sh start
   ```
 - Change permissions and owners:
   ```
@@ -129,7 +129,9 @@ mkdir -p /hadoop_stack
   su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chown -R hdfs:hadoop /"
   su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chmod 0775 /" 
   ```
-        
+ 
+#### Create user to work with the stack
+bash manage_stack create_user hosts_file
 #### Install HBASE
 - download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):
 - untar the file in the `hadoop_stack` folder
