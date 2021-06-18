@@ -46,7 +46,7 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     mount /dev/sdb1 /hdd
     e2label /dev/sdb1 hdd
     ```
-    update the /etc/fstab file
+    update the `vim /etc/fstab` file
     ```
     LABEL=hdd       /hdd            ext3    defaults        1 2
     ```
@@ -115,6 +115,20 @@ mkdir -p /hadoop_stack
     - it copies the folder to all nodes
     - sets the permissions groups and environment variables
     - creates the users to run hadoop
+- On master node running namenode, format the hdfs
+  ```
+  su hdfs -c "$HADOOP_HOME/bin/hdfs namenode -format
+  ```
+- Start hadoop
+  ```
+  bash manage_hadoop/start_hadoop.sh start
+  ```
+- Change permissions and owners:
+  ```
+  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -mkdir /tmp"
+  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chown -R hdfs:hadoop /"
+  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chmod 0775 /" 
+  ```
         
 #### Install HBASE
 - download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):

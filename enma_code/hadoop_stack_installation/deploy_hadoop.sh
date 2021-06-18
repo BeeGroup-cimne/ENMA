@@ -27,7 +27,7 @@ do
 
   for env in ${ENV_TO_SET[@]}
     do
-      ssh -n $host 'echo "export $env" >> /etc/bash.bashrc'
+      ssh -n $host "echo export $env >> /etc/bash.bashrc"
     done
 done < $1
 
