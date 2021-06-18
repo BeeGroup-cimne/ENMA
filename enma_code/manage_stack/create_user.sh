@@ -1,10 +1,10 @@
-! /bin/bash
+#! /bin/bash
 
 echo "write the user to create"
 read -r CLIENT
-
 sudo adduser $CLIENT
 export CLIENT=$CLIENT
+export MENU_OPTION="1"
 bash openvpn-install.sh
 while read p
 do

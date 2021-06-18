@@ -127,22 +127,53 @@ mkdir -p /hadoop_stack
   ```
   su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -mkdir /tmp"
   su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chown -R hdfs:hadoop /"
-  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chmod 0775 /" 
+  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chmod -R 0775 /" 
   ```
- 
+#### Test installation
+copy the examples jar to the user home.
+
+*Test installation*:
+```
+hadoop jar hadoop-mapreduce-examples-3.3.1.jar pi 10 1000
+```
+*Test docker*:
+```
+MOUNTS="$HADOOP_HOME:$HADOOP_HOME:ro,/etc/passwd:/etc/passwd:ro,/etc/group:/etc/group:ro"
+IMAGE_ID="library/openjdk:8"
+yarn jar hadoop-mapreduce-examples-3.3.1.jar pi \
+    -Dmapreduce.map.env.YARN_CONTAINER_RUNTIME_TYPE=docker \
+    -Dmapreduce.map.env.YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS \
+    -Dmapreduce.map.env.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID \
+    -Dmapreduce.reduce.env.YARN_CONTAINER_RUNTIME_TYPE=docker \
+    -Dmapreduce.reduce.env.YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS \
+    -Dmapreduce.reduce.env.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID \
+    1 40000
+```
+
 #### Create user to work with the stack
-bash manage_stack create_user hosts_file
+bash manage_stack/create_user.sh hosts_file
+
 #### Install HBASE
 - download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):
 - untar the file in the `hadoop_stack` folder
   ```
   tar -xzvf apache-x.y-z.tar.gz -C /hadoop_stack
   ```
-9- install hbase
-    - download tar.gz and unpack
-    - configure service
-    - send it to all nodes
-    - set up easy start
+- set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+- set a `hmaster` file with the master node name
+- set the variables in the setup script `hadoop_stack_installation -> deploy_hbase.sh`
+  - HBASE_ENV
+  
+- run the script:
+  ```
+  bash hadoop_stack_installation/deploy_hbase.sh hosts_file
+  ```
+    - it copies the folder to all nodes
+    - sets the permissions groups and environment variables
+    - creates the hbase user to run hbase
+    - sets passwordless ssh between nodes for hbase user
+
+
 
 ### Install HIVE
 - download stable hadoop release binary from oficial [webpage](https://hive.apache.org/):
