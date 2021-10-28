@@ -1,9 +1,8 @@
-<img src="Enma-greengrey.png" width="250" height="250" class="center"/>
-
+![ENMA Architecture](pictures/Enma-greengrey.png)
 
 # ENMA Big Data Platform
 
-The ENMA platform was developed by CIMNE and it is a Big Data software which allows to storage, manage and analyze high amounts of information using the Map-Reduce paradigm.
+The ENMA platform was developed by CIMNE and it is a Big Data software which allows to storage, manage and analyze high amounts of information.
 
 ## The origin of ENMA
 
@@ -20,7 +19,7 @@ The overall aim of the project is to empower and aware consumers by involving, i
 
 ## Documentation index
 
-Following is the structure of this documentation. Each project using this architecture will dispose with their own documentation.
+Following is the structure of this documentation.
 
 1. **[Architecture of the platform](architecture/system_architecture.md)**
 2. **[Analytical modules workflow](modules/workflow.md)**

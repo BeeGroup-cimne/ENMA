@@ -130,6 +130,9 @@ mkdir -p /hadoop_stack
   su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chmod -R 0775 /" 
   ```
 #### Test installation
+check the web interfaces:
+<namenode>:9870
+<resourcemanager>:8088
 copy the examples jar to the user home.
 
 *Test installation*:
@@ -150,14 +153,11 @@ yarn jar hadoop-mapreduce-examples-3.3.1.jar pi \
     1 40000
 ```
 
-#### Create user to work with the stack
-bash manage_stack/create_user.sh hosts_file
-
 #### Install HBASE
 - download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):
 - untar the file in the `hadoop_stack` folder
   ```
-  tar -xzvf apache-x.y-z.tar.gz -C /hadoop_stack
+  tar -xzvf hbase-x.y-z.tar.gz -C /hadoop_stack
   ```
 - set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
 - set a `hmaster` file with the master node name
@@ -172,8 +172,25 @@ bash manage_stack/create_user.sh hosts_file
     - sets the permissions groups and environment variables
     - creates the hbase user to run hbase
     - sets passwordless ssh between nodes for hbase user
+    
+- Start hbase
+```
+    bash manage_stack/manage_hbase.sh start
+```
+#### Test installation
+check the web interfaces
+<hmaster>:16010
 
+in any node, run
 
+```
+hbase shell
+list
+create "test","m"
+list
+put 'test',1,'m:test','10'
+scan 'test'
+```
 
 ### Install HIVE
 - download stable hadoop release binary from oficial [webpage](https://hive.apache.org/):
@@ -181,225 +198,83 @@ bash manage_stack/create_user.sh hosts_file
   ```
   tar -xzvf hive-x.y-z.tar.gz -C /hadoop_stack
   ```
-10- install hive
-    - download tar.gz and unpack
-    - configure service
-    - send it to all nodes
-    - set up easy start
-
-    - download mysql-connector-java.jar.
-        ```bash
+- set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+ 
+- set mysql as the hive metadata database following the [tutorial](https://data-flair.training/blogs/configure-hive-metastore-to-mysql)
+    - sudo apt-get install mysql-server on the manager_node
+    - download, install and copy mysql-connector-java:
+      ```bash
         wget url
         dpkg -i path_to_deb_file
         ```
-   
-10. Last steps:
-    - [Set up the correct name for the hadoop public hostname](https://community.cloudera.com/t5/Community-Articles/Why-ambari-host-might-have-different-public-host-name-and/ta-p/246662)(only on openstack)
-    - change hdfs the *.http-address ip to 0.0.0.0
-    - [uninstall smartsense](https://docs.cloudera.com/HDPDocuments/SS1/SmartSense-1.2.0/bk_smartsense_admin/content/ambari_uninstall.html) (if not paying the subscription)
-    - install [tomcat](https://linuxize.com/post/how-to-install-tomcat-9-on-ubuntu-18-04/)
-    - install [tez view](https://tez.apache.org/tez-ui.html)
+      copy the jar file usually in /usr/share/java/ to $HIVE_HOME/lib
 
-*If you face errors while starting the ambari-metrics application, remove previous data and restart the service*.
-```bash
-rm -rf /var/lib/ambari-metrics-collector
-```
-
-### Connect HBASE with HIVE
-    
-1. Add hive property to connect to hbase properly(matching values with hbase config)
-
-    *In hive->config->advanced-> custom hive-site.xml*
-    
-        hbase.zookeeper.quorum : value in hbase->config->advanced
-        
-        zookeeper.znode.parent : value in hbase->config->advanced
-     
-2. On the server running the hbase master, start the thrift hive server:
-    ```bash
-    /usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift --bind <private_ip>
+- Edit configuration in hive-site.xml
+        - javax.jdo.option.ConnectionURL: jdbc:mysql://host/hcatalog?createDatabaseIfNotExist=true
+        - javax.jdo.option.ConnectionUserName: <hive_mysql_username> 
+        - javax.jdo.option.ConnectionPassword: <hive_mysql_password>
+        - javax.jdo.option.ConnectionDriverName: com.mysql.cj.jdbc.Driver
+- Create mysql table `hcatalog`, user with password in mysql 
     ```
-   For kerberized cluster set also the credentials for the thrift server:
-    
+      create database 'hcatalog';
+      create 'user'@'%' identified by 'password';
+      grant all privileges on hcatalog.* to hive;
+    ```
+- Edit mysql configuration to listen to all IP
+    ```
+       vim /etc/mysql/mysql.conf.d/mysqld.cnf 
+       # set
+       bind-address            = 0.0.0.0
+       mysqlx-bind-address     = 0.0.0.0     
+    ```
+- Restart mysql
+  ```
+  systemctl restart mysql
+  ```
+- change guava jar on hive from the one in hadoop:
+  - remove guava-x.y.z.jar on $HIVE_HOME/lib
+  - copy $HADOOP_HOME/share/hadoop/hdfs/lib/guava-x.y.z.jar to $HIVE_HOME/lib
    
-In custom hbase-site.xml:
-    
-```bash
-hbase.thrift.security.qop=auth
-hbase.thrift.support.proxyuser=true
-hbase.regionserver.thrift.http=true
-hbase.thrift.keytab.file=/etc/security/keytabs/hbase.service.keytab 
-hbase.thrift.kerberos.principal=hbase/_HOST@HWX.COM 
-hbase.security.authentication.spnego.kerberos.keytab=/etc/security/keytabs/spnego.service.keytab 
-hbase.security.authentication.spnego.kerberos.principal=HTTP/_HOST@HDP.COM
-```
-In custom core-site.xml:
+- set the variables in the setup script `hadoop_stack_installation -> deploy_hive.sh`
+  - HIVE_ENV
 
-```bash
-hadoop.proxyuser.hbase.groups=*
-hadoop.proxyuser.hbase.hosts=*
+- run the script:
+  ```
+  bash hadoop_stack_installation/deploy_hive.sh hosts_file
+  ```
+    - it copies the folder to all nodes
+    - sets the permissions groups and environment variables
+    - creates the hive user to run hiveserver2
+    - creates the schema in mysql database
+
+- Start hbase
+```
+    bash manage_stack/manage_hive.sh start
+```
+#### Test installation
+
+in any node, run
+
+```
+beeline -u jdbc:hive2://master1.internal:10000 -n ubuntu
+show databases;
+create database test;
+use test;
+create table test (id bigint, value string);
+show tables;
+insert into test values (1, "hola");
+select * from test;
+create external table htest(id int, test string) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,m:test") TBLPROPERTIES ("hbase.table.name"="test");
+select * from htest;
 ```
 
-*font: https://community.cloudera.com/t5/Community-Articles/Start-and-test-HBASE-thrift-server-in-a-kerberised/tac-p/244673*
+#### Create user to work with the stack
+bash manage_stack/create_user.sh hosts_file
+
+
+
+
 ***
-## Create users 
-1. Create the HDFS user's home and add the user to the hadoop and hdfs group
-    ```bash
-    # create the user folder in hdfs
-    su hdfs # hdfs user has permission to create files
-    hdfs dfs -mkdir /user/<user> # create the folder
-    hdfs dfs -chown <user>:hdfs /user/<user> # change the owner
-    # go back to the root
-    exit
-    # add the <user> to the hadoop and hdfs groups
-    usermod -a -G hadoop <user>
-    usermod -a -G hdfs <user>
-    ```
-2. Configure pip in `.bashrc` to avoid installing python packages globally for the user who will execute jobs. Do it as user, not root.       
-   ```bash
-    # pip config
-    export PIP_REQUIRE_VIRTUALENV=true
-    gpip() {
-        PIP_REQUIRE_VIRTUALENV="" pip "$@"
-    }
-    gpip3(){
-        PIP_REQUIRE_VIRTUALENV="" pip3 "$@"
-    }
-    ```
-
-## Security
-
-1. install [kerberos](https://docs.cloudera.com/HDPDocuments/HDP2/HDP-2.6.1/bk_security/content/configuring_amb_hdp_for_kerberos.html)
-
-2. Create the principals for the users in hadoop.
-    - Create the hdfs user principal
-
-        ```kadmin:  addprinc hdfs@REALM.COM```
-    - Repeat [step 1 in Create users](#create-users) (logging in as hdfs principal).
-    - Create a principal in kerberos with the same name: 
-    
-        ```kadmin:  addprinc username@REALM.COM```
-    
-3. Generate the certificate for all nodes using certbot.
-    *On admin node*
-    ```bash
-    . enma_setup/run_on_nodes.sh hosts_file "sudo snap install core; sudo snap refresh core"
-    . enma_setup/run_on_nodes.sh hosts_file "sudo snap install --classic certbot"
-    . enma_setup/run_on_nodes.sh hosts_file "sudo ln -s /snap/bin/certbot /usr/bin/certbot"
-    ```
-    *On all nodes*
-    ```bash
-    sudo certbot certonly --standalone
-    ````
-    
-4. [Set the ambari server under https](https://docs.cloudera.com/HDPDocuments/Ambari-2.1.2.1/bk_Ambari_Security_Guide/content/_optional_set_up_ssl_for_ambari.html)
-        
-    To set the ambari-server to renew the certificates automatically using certbot we have to create a script in the deploy hook folder:
-    ```bash
-    cd /etc/letsencrypt/renewal-hooks/deploy
-    CERT=<path to fullchain cert>
-    KEY=<path to private key>
-    PASSWD=<private key password>
-    printf "#! /bin/bash\nambari-server stop\nambari-server setup-security --security-option=setup-https --api-ssl=true --api-ssl-port=8443 --import-cert-path=$CERT --import-key-path=$KEY --pem-password=\"$PASSWD\"\nambari-server start\n" > restart_ambari.sh
-    chmod 0775 restart_ambari.sh
-    ```
-    *st the variables depending on your system*
-    #########################################################################
-
-    **Currently not working (Is for the complete HTTPS connection with the nodes)**
-    *create the .p12 file with the obtained certs*
-    ```bash
-    #import the files in a jks keystore.
-    apt install -y openjdk-11-jre-headless
-    HOSTNAME=<host>
-    PASSWORD=<password>
-    #create p12 for the cert
-    openssl pkcs12 -export -out cert.p12 -in fullchain.pem -inkey privkey.pem -passout pass:$PASSWORD
-    #import it to the keystore
-    keytool -importkeystore -srckeystore cert.p12 -srcstoretype pkcs12 -srcalias 1 -srcstorepass $PASSWORD -destkeystore odin-hadoop.jks -deststoretype JKS  -destalias $HOSTNAME -deststorepass $PASSWORD    
-    ```
-    send jks file to each host and repeat
-    keytool -list -keystore odin-hadoop.jks -storepass $PASSWORD
-
-    #########################################################################
-
-## Optimization
-
-
-1. After installation, change configuration of cluster:
-    - configure yarn max memory to match the max memory of the node/ram
-    - configure tez to close session when query is finished:
-        -tez.session.am.dag.submit.timeout.secs = 0
-    
-
-## Set up docker for launching applications
-
-1. [Manage Docker as non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
-
-run the following commands on all nodes. You can use the "run on nodes utility"
-```bash
-USER=<non root user to add to the docker group>
-source enma_setup/run_on_nodes.sh hosts_file "groupadd docker&usermod -aG docker $USER&newgrp docker"
-```
-2. [Configure Docker to start on boot](https://docs.docker.com/engine/install/linux-postinstall/#configure-docker-to-start-on-boot)
-```bash
-source enma_setup/run_on_nodes.sh hosts_file "systemctl enable docker.service"
-```
-3. [Launching Applications Using Docker Containers](https://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/DockerContainers.html)
-## Set up the project environment
-1. Install celery on the admin node
-
-```bash
-apt install -y libmysqlclient-dev
-apt install -y rabbitmq-server
-apt install -y supervisor
-apt install -y python-celery-common
-pip3 install celery
-pip3 install django
-pip3 install mysqlclient
-pip3 install django-celery
-```
-
-2. Install the enma_project directories in the folder to run the project and set the following files:
-    - envconfig.json: Set the info for the rabbitmq
-    - celeryconfig.py: Set the info of the local celery database
-    - celery_supervisor.sh: Set the path of the enma_projects folder and hadoop streaming home
-    set permissions to execute `celery_supervisor.sh`
-    
-    ```bash
-    chmod 0755 celery_supervisor.sh
-    ```
-    
-3. Create the rabbitmq config as in envconfig.json
-``` bash
-rabbitmqctl add_user <username> <password>
-rabbitmqctl  add_vhost <vhost>
-rabbitmqctl set_permissions -p <vhost> <username> ".*" ".*" ".*"
-```
-
-4. Create the supervisorctl script (celery.conf).
-``` bash
-[program:celery]
-directory=<enma_project_folder>
-command=<enma_project_folder>/celery_supervisor.sh
-user = <user>
-startsecs = 5
-autostart = True
-```
-
-
-5. Start supervisor and celery
-``` bash
-service supervisor start
-supervisorctl reload
-```
-
-
-
-6. Configure a project to be run in `celery_backend.py`
-    - add the module's task in the `include` list
-    - restart the celery server
-
 
 ## Add new nodes to cluster
 

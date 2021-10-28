@@ -6,34 +6,33 @@ ENMA have been designed as an scalable architecture, combinign different compone
 
 ![ENMA Architecture](../pictures/architecture.png)
 
-#### Input/Output of data
+### Container Execution Manager
 
-This component is the main tool to communicate with the external applications and users.
-It consists on a python framework (**python-eve**), that provides a RESTful interface, linked with a **MongoDB** database (NoSQL).
+This component will be in charge to run and manage all the different general purpose containers: 
+    
+- Asynchronous task that will execute the different steps of a Data Analytics Module.
+- API (REST) to provide data access to applications
+- Final web user interfaces.
 
-The most important feature for this REST API are the easy scalability provided by python eve and the data transfering speed.
-
-
-#### Job Scheduler and queuing
-
-Asynchronous task/job queue that will execute the different steps of a Data Analytics Module.
-
-In this architecture, a task is a set of instructions: i.e. queries to databases, hadoop jobs (map-reduce), etc. that analyze the stored data or transforms it.
-
-By the nature of the consumption analysis we need to ensure some "steps" (usually ETLs or a module that needs another module results) are already executed before running a given module/ETL. This could be achieve using **celery** which can be configured to execute periodic tasks, control the CPU usage before trigger another module or even use a module result as parameters for another one (chain).
-
-If the developer wants to get more from celery (AMQP) can read the [celery documentation site](http://docs.celeryproject.org/en/latest/index.html).
-
-An example of a good workflow design is explained in the [celery canvas documentation](http://docs.celeryproject.org/en/latest/userguide/canvas.html)
-
-To automate the process with periodic tasks, **crontab** is a good choice, as it is simple and already installed in most linux distributions.
+To be able to manage all these containers, this component is powered by a **Kubernetes** cluster, where all the previous components must be implemented inside a **docker**.
 
 
-#### Data Analytics
+> In this architecture, a task is a set of instructions: queries to databases, data transformations , model training, etc. That analyze the stored data or transforms it.
+
+
+### Fast Access Storage
+
+This component is the main database for the different API and users interfaces. This database is intended to store all required
+input and output information provided by **MongoDB** (NoSQL).
+
+This database is the key for many processes in the architecture, so we must ensure it is heavily resilient to data loss or downtimes.
+
+
+### Data Analytics
 
 Hadoop is the Big Data framework used in this architecture. With its components (some described below) we will be able to develop scalable modules operating in a distributed way, using the Map-Reduce paradigm.
 
-**HDFS:**
+**HDFS**:
 
 Hadoop Distributed FileSystem (HDFS). Is the FS where Hadoop components work (like HBase or Hive).
 

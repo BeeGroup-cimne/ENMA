@@ -81,26 +81,6 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     *Include all nodes in the file (master and workers and edges, first node must be the admin node)*
 
 6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node
-*****
-untar in some /folder like hadoop_stack
-chmod -R 0775 /hadoop_stack/hadoop-3.3.0/logs
-chmod 6050 /hadoop_stack/hadoop-3.3.0/bin/container-executor
-chmod 6050 /hadoop_stack/hadoop-3.3.0/etc/hadoop/container-executor.cfg 
-chown root:hadoop /hadoop_stack/hadoop-3.3.0/etc/hadoop/container-executor.cfg
-
-
-create users in hadoop (create user in all nodes, add groups and hdfs dfsadmin -refreshUserToGroupsMappings)
-
-
-apt install maven
-wget https://www-eu.apache.org/dist/ambari/ambari-2.7.5/apache-ambari-2.7.5-src.tar.gz (use the suggested mirror from above)
-tar xfvz apache-ambari-2.7.5-src.tar.gz
-cd apache-ambari-2.7.5-src
-mvn versions:set -DnewVersion=2.7.5.0.0
- 
-pushd ambari-metrics
-mvn versions:set -DnewVersion=2.7.5.0.0
-popd
 
 7. run the set_nodes.sh script
     ```bash
