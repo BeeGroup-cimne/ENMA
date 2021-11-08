@@ -274,85 +274,130 @@ bash manage_stack/create_user.sh hosts_file
 
 
 
-***
+[comment]: <> (***)
 
-## Add new nodes to cluster
+[comment]: <> (## Add new nodes to cluster)
 
-1. set the root password for the new nodes
-```bash
-sudo passwd
-su -
-```
+[comment]: <> (1. set the root password for the new nodes)
 
-2. add public key and configure the passwordless ssh in the new hosts.
+[comment]: <> (```bash)
 
-*on admin node*
-```bash
-cat /root/.ssh/id_rsa.pub
-```
+[comment]: <> (sudo passwd)
 
-*on each new host node*
-```bash
-echo/cat master_key >>/root/.ssh/authorized_keys
-```
+[comment]: <> (su -)
 
-3. connect the node to the private network
-```bash
-ip link # list all ip interfaces
-ip address # check connected interfaces
-ifconfig <int> <private address> up # force connection to the ip address
-```
+[comment]: <> (```)
 
-4. update the file with the new cluster hosts in the admin node:
-```
-<ip> <hostname>
-<ip> <hostname>
-```
-Include all nodes in the script (admin, master and workers)
+[comment]: <> (2. add public key and configure the passwordless ssh in the new hosts.)
 
-5. run the set_nodes.sh utility
-```bash
-. enma_setup/set_nodes.sh hosts_file 
-```
-This script has the utility to set-up all the hosts through ssh
-1. backup the /etc/hosts file in /opt/hosts_utils.
-2. adds all the hosts of the file passed as parameter into /etc/hosts
-3. sets the hostname of the nodes
-4. install the required packages
+[comment]: <> (*on admin node*)
 
-6. connect to <ip>:8080 to configure the new node
+[comment]: <> (```bash)
+
+[comment]: <> (cat /root/.ssh/id_rsa.pub)
+
+[comment]: <> (```)
+
+[comment]: <> (*on each new host node*)
+
+[comment]: <> (```bash)
+
+[comment]: <> (echo/cat master_key >>/root/.ssh/authorized_keys)
+
+[comment]: <> (```)
+
+[comment]: <> (3. connect the node to the private network)
+
+[comment]: <> (```bash)
+
+[comment]: <> (ip link # list all ip interfaces)
+
+[comment]: <> (ip address # check connected interfaces)
+
+[comment]: <> (ifconfig <int> <private address> up # force connection to the ip address)
+
+[comment]: <> (```)
+
+[comment]: <> (4. update the file with the new cluster hosts in the admin node:)
+
+[comment]: <> (```)
+
+[comment]: <> (<ip> <hostname>)
+
+[comment]: <> (<ip> <hostname>)
+
+[comment]: <> (```)
+
+[comment]: <> (Include all nodes in the script &#40;admin, master and workers&#41;)
+
+[comment]: <> (5. run the set_nodes.sh utility)
+
+[comment]: <> (```bash)
+
+[comment]: <> (. enma_setup/set_nodes.sh hosts_file )
+
+[comment]: <> (```)
+
+[comment]: <> (This script has the utility to set-up all the hosts through ssh)
+
+[comment]: <> (1. backup the /etc/hosts file in /opt/hosts_utils.)
+
+[comment]: <> (2. adds all the hosts of the file passed as parameter into /etc/hosts)
+
+[comment]: <> (3. sets the hostname of the nodes)
+
+[comment]: <> (4. install the required packages)
+
+[comment]: <> (6. connect to <ip>:8080 to configure the new node)
 
 
-# Description of enma_setup
-This package contains scripts to manage the cluster nodes from the master. 
+[comment]: <> (# Description of enma_setup)
 
-Following is a brief description on the scripts
+[comment]: <> (This package contains scripts to manage the cluster nodes from the master. )
 
-1. hosts_utils:
-    package containing the required scripts to manage the /etc/hosts
-    1. enma_setup/hosts_utilities/set_up.sh: Run on the setup of the node, it copies the /etc/hosts as a backup to add more hosts later.
+[comment]: <> (Following is a brief description on the scripts)
 
-    2. enma_setup/hosts_utilities/update_hosts.sh: Updates the original hosts with the new hosts files passed as parameter.
+[comment]: <> (1. hosts_utils:)
 
-2. install.sh 
-    install all required packages for setting up the ambari server 
+[comment]: <> (    package containing the required scripts to manage the /etc/hosts)
 
-3. set_nodes.sh
-    main installation script that:
-    1. updates the /etc/hosts to all nodes
-    2. sets the hostname of all nodes
-    3. installs the packages in "install.sh"
+[comment]: <> (    1. enma_setup/hosts_utilities/set_up.sh: Run on the setup of the node, it copies the /etc/hosts as a backup to add more hosts later.)
 
-4. run_on_nodes.sh
-    utility to run commands on all nodes
+[comment]: <> (    2. enma_setup/hosts_utilities/update_hosts.sh: Updates the original hosts with the new hosts files passed as parameter.)
+
+[comment]: <> (2. install.sh )
+
+[comment]: <> (    install all required packages for setting up the ambari server )
+
+[comment]: <> (3. set_nodes.sh)
+
+[comment]: <> (    main installation script that:)
+
+[comment]: <> (    1. updates the /etc/hosts to all nodes)
+
+[comment]: <> (    2. sets the hostname of all nodes)
+
+[comment]: <> (    3. installs the packages in "install.sh")
+
+[comment]: <> (4. run_on_nodes.sh)
+
+[comment]: <> (    utility to run commands on all nodes)
 
 
-## install hadoop stack
-#mkdir hadoop_stack
-#while read app
-#do
-#  url_app=`echo $app|cut -d" " -f1`
-#	filename=`basename $url_app`
-#  wget -P hadoop_stack $url_app;
-#  tar -xzvf hadoop_stack/$filename -C hadoop_stack
-#done < hdp_version
+[comment]: <> (## install hadoop stack)
+
+[comment]: <> (#mkdir hadoop_stack)
+
+[comment]: <> (#while read app)
+
+[comment]: <> (#do)
+
+[comment]: <> (#  url_app=`echo $app|cut -d" " -f1`)
+
+[comment]: <> (#	filename=`basename $url_app`)
+
+[comment]: <> (#  wget -P hadoop_stack $url_app;)
+
+[comment]: <> (#  tar -xzvf hadoop_stack/$filename -C hadoop_stack)
+
+[comment]: <> (#done < hdp_version)

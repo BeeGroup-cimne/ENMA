@@ -4,11 +4,20 @@
 
 ## 1. General description of the structure of a ENMA task
 
-The module workflow must be implemented in a docker container, this container migth need all the required dependencies to run
-in the application. One of the best aproaches is to make the container run a commander scripts that orchestrates all the different
-steps of the module. This script defines the module function and his subtasks workflow, which are executed in a synchronously way.
+A task will be implemented as a docker container. Each task needs all the required dependencies to run the application. 
 
-In the following schema, the general structure is shown.
+An ENMA task consists on a veriety of execution:
+
+### 1.1 Type of tasks
+- User interfaces: Provides an application client for the users to interact with the system.
+- API or Communication layers: Provides a communication layer between systems.
+- Isolated tasks or analytics: Runs some task/analytics module defined in an isolated container
+- Big data task or analytics: Runs some task/analytics module that makes use of the Hadoop Big data architecture.
+
+
+### 1.2 Big data tasks
+The following picture shows the workflow of a Big Data task running in the ENMA platform. The main idea is that the main 
+container prepares the data in the system and runs the tasks in the Big Data architecture.
 
 ![ENMA Architecture](../pictures/modules_general_structure.png)
 

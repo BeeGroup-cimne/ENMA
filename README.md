@@ -22,7 +22,8 @@ The overall aim of the project is to empower and aware consumers by involving, i
 Following is the structure of this documentation.
 
 1. **[Architecture of the platform](architecture/system_architecture.md)**
-2. **[Analytical modules workflow](modules/workflow.md)**
-3. **[Documentation for module developers](developers/developers.md)**
-4. **[Installing architecture](enma_code_ambari/installing.md)**
+2. **[Task definition](modules/workflow.md)**
+
+[comment]: <> (3. ~~**[Documentation for module developers]&#40;developers/developers.md&#41;**~~ &#40;Not Updated&#41;)
+4. **[Installing architecture](enma_code/installing.md)**
    
