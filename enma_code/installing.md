@@ -30,14 +30,36 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     ```
 
 3. check if the nodes are connected on the fast private network.
-   ```
-   ip address
-   ```
-   If they are not, connect them depending on their linux distribution.
+      ```
+      ip address
+      ```
+      If they are not, connect them depending on their linux distribution.
    
-   *Check the name on the private network interface*
+      *Check the name on the private network interface to use latter*
 
-4. mount the HDD of the nodes
+---
+Permanently connect to the private network (ditribution: Ubuntu20.04)
+    
+```bash
+   vim /etc/netplan/50-cloud-init.yaml 
+   ```
+   *add the following text following yaml format*
+   ```yaml
+   network:
+       ethernets:
+           <network interface>:
+               dhcp4: false
+               addresses: [<private network>/<mask>]
+       version: 2
+
+   ```
+   *accempt the changes*
+   ```bash
+   netplan apply
+```
+---
+
+4. mount the HDD of the nodes if external drives are available
     ```bash
     lsblk # to list all hdd
     fdisk /dev/sdb #create primary partition with 'n' and 'p' and save with 'w' 
