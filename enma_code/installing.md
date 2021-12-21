@@ -7,15 +7,30 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
 ## Set up the cluster
 ### Requirements before start
 - ssh access to all nodes
+- Basic knowledge of the hadoop infrastructure and concepts.
+- Basic knowledge of ubuntu concepts.
+### Naming convention
+During this tutorial, some concepts will be used. In this section you can find a definition of the different concepts that may help understanding them.
+
+- **root:** The user administrator of the linux system. It has permissions to perform all operations. His name is `root`
+- **node:** Any machine conforming the cluster.
+- **master node:** A node that will be used to install hadoop master components. This will manage the executions and the storage.
+- **worker node:** A node that will be used to install hadoop worker components. This will execute the tasks and store the data
+- **admin node:** The node that will be used to install and administrate the whole cluster. You can select any node. A recommendation is to use one of the masters.
+- **interface(connection):** The interface is the given name to a physical of virtual connection interface in the OS.
+- **fast private network:** A private network that internally connects the cluster machines. In OVH is the private network configuration.
+- **drive name:** The name that OS gives to all drives. Usually for physical drives is sdX where X is a letter. ex: sda
+- **drive partition name:** The name that OS gives to all partitions. Usually for physical drive partitions is sdXY where X is a letter and y a number. ex: sda1
+- **private hostname:** Is a hostname we will choose for the node for internal use. 
 
 ### Prepare the nodes 
-1. set the root password for all nodes and log as the root user
+1. set the root password for all nodes and log-in as the root user. Continue the tutorial as root on all nodes
     ```bash
     sudo passwd
     sudo su -
     ```
 
-2. create public key in the admin node for root and configure the passwordless ssh in all hosts.
+2. create public key in the admin node for the root user and configure the passwordless ssh in all hosts.
     *on admin node*
 
     ```bash
@@ -29,44 +44,44 @@ This tutorial will guide you to install the working hadoop cluster in a few easy
     echo "<master_key>" >> /root/.ssh/authorized_keys
     ```
 
-3. check if the nodes are connected on the fast private network.
+3. check if the nodes are connected on the fast private network if it exists in your cluster.
       ```
       ip address
       ```
-      If they are not, connect them depending on their linux distribution.
-   
-      *Check the name on the private network interface to use latter*
+   *Check the interface on the fast private network interface to use latter*
 
----
-Permanently connect to the private network (ditribution: Ubuntu20.04)
-    
-```bash
-   vim /etc/netplan/50-cloud-init.yaml 
-   ```
-   *add the following text following yaml format*
-   ```yaml
-   network:
-       ethernets:
-           <network interface>:
-               dhcp4: false
-               addresses: [<private network>/<mask>]
-       version: 2
+   If the state of the is DOWN, verify how to connect to the fast private network according to your linux distribution.
 
-   ```
-   *accempt the changes*
-   ```bash
-   netplan apply
-```
----
+   > Permanently connect to the fast private network (ditribution: Ubuntu20.04)
+   > 
+   > - *Edit the 50-cloud-init.yaml file*
+   > 
+   >```bash
+   >   vim /etc/netplan/50-cloud-init.yaml 
+   >   ```
+   > -  *add the following text following yaml format*
+   >   ```yaml
+   >   network:
+   >       ethernets:
+   >           <network interface>:
+   >               dhcp4: false
+   >               addresses: [<private network>/<mask>] ex: 10.8.0.1/24
+   >       version: 2
+   >
+   >   ```
+   > -  *accempt the changes*
+   >   ```bash
+   >   netplan apply
+   >   ```
 
 4. mount the HDD of the nodes if external drives are available
     ```bash
     lsblk # to list all hdd
-    fdisk /dev/sdb #create primary partition with 'n' and 'p' and save with 'w' 
-    mkfs.ext3 /dev/sdb1 # to format the partition
+    fdisk /dev/<drive name> #create primary partition with 'n' and 'p' and save with 'w' 
+    mkfs.ext3 /dev/<drive partition name> # to format the partition
     mkdir /hdd
-    mount /dev/sdb1 /hdd
-    e2label /dev/sdb1 hdd
+    mount /dev/<drive partition name> /hdd
+    e2label /dev/<drive partition name> hdd
     ```
     update the `vim /etc/fstab` file
     ```
@@ -75,32 +90,45 @@ Permanently connect to the private network (ditribution: Ubuntu20.04)
     
 5. create a `hosts_file` file with all cluster hosts in the admin node:
     ```
-    <private fast ip> <private hostname>
-    <private fast ip> <private hostname>
+    <fast private ip> <private hostname>
+    <fast private ip> <private hostname>
     ```
-    *Include all nodes in the file (the administrator node must be the first one)*
+    *Include all nodes in the file (the admin node must be the first one)*
+    >TIP: the private hostname can be any name to identify the nodes internally. ex: `<node_name>.internal
 
-6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node
+6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node. Choose a folder in the root home `/root`
 
-7. run the setup utility that will prepare each node for hadoop with bash
-    ```
-    bash enma_setup/set_nodes.sh hosts_file
-    ```
-    this script will:
-    - on all nodes:
-        - install the necessari packages
-        - set hostnames and hosts
-        - set the limits in files and processes
-        - configure docker to be executed as non root and start on startup.
-    - on admin node:
-        - set the VPN server
-        - create all vpn clients for each node
-        - send the certificate to each node
-    - on all nodes:
-        - connect to the vpn
-        - configure the firewall to block all connections but port 22 in external ip
+   - run the setup utility that will prepare each node for hadoop with bash
+      ```
+      bash enma_setup/set_nodes.sh hosts_file
+      ```
 
-8. reboot system to prepare for installing hadoop:
+   - During execution, some information will be asked by the script to properly set the cluster
+    
+     - **VPN network:** The vpn network you are going to create. Choose any  reserved private IP.
+     - **VPN network mask:** The mask for the VPN network. ex: 255.255.255.0 
+     - **Main user home:** The home for the main user, where the vpn certs are stored. ex: /home/ubuntu
+     - **Fast private network interface:** The interface of the fast private network.
+     - **VPN interface:** The interface of the VPN network.
+     
+   - This script will:
+   
+     - on all nodes:
+       - install the necessari packages
+       - set hostnames and hosts
+       - set the limits in files and processes
+       - configure docker to be executed as non root and start on startup.
+
+     - on admin node:
+       - set the VPN server
+       - create all vpn clients for each node
+       - send the certificate to each node
+          
+     - on all nodes:
+       - connect to the vpn
+       - configure the firewall to block all connections but port 22 in external ip
+
+7. reboot system to prepare for installing hadoop:
     ```bash 
     tac hosts_file > hosts_file_rev
     bash enma_setup/run_on_nodes.sh hosts_file_rev reboot
