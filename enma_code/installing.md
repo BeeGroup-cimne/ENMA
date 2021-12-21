@@ -148,23 +148,33 @@ mkdir -p /hadoop_stack
   tar -xzvf hadoop-x.y-z.tar.gz -C /hadoop_stack
   ```
 - set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+    - check examples in `config_examples` folder.
 - set a `masters` file with the master information:
-  ```
-  <user> <binary> <service> <node>
-  ...
-  hdfs bin/hdfs namenode master1
-  ```
-- set the variables in the setup script `hadoop_stack_installation -> deploy_hadoop.sh`
-  - HADOOP_STACK_DIR
-  - HADOOP_ENV
-  - HADOOP_DATA_DIR
+    ```
+    <user> <binary> <service> <node> ex: hdfs bin/hdfs namenode master1
+    ```
+  - **user:** the user that will run the service
+  - **binary:** the binary to use to run the service [hdfs, yarn]
+  - **service:** the master service to run [namenode, secondarynamenode, resourcemanager, proxyserver]
+  - **node:** the private hostname of the node that will run the service
+    
+- set the variables in the setup script `deploy_hadoop.sh` 
+    ```
+    vim hadoop_stack_installation/deploy_hadoop.sh
+    ```
+  And set the environemnt variables:.
+  - **HADOOP_STACK_DIR:** folder created for the hadoop_stack. ex: /hadoop_stack
+  - **HADOOP_ENV:** path to the `hadoop-env.sh` configuration file. ex:/hadoop_stack/hadoop/etc/hadoop/hadoop-env.sh
+  - **HADOOP_DATA_DIR:** Folder to store the hadoop data. ex: /hdd
 - run the script:
   ```
   bash hadoop_stack_installation/deploy_hadoop.sh hosts_file
   ```
-    - it copies the folder to all nodes
+  this script:
+    - copies the hadoop installation to all nodes
     - sets the permissions groups and environment variables
     - creates the users to run hadoop
+
 - On master node running namenode, format the hdfs
   ```
   su hdfs -c "$HADOOP_HOME/bin/hdfs namenode -format"
@@ -183,7 +193,7 @@ mkdir -p /hadoop_stack
 check the web interfaces:
 <namenode>:9870
 <resourcemanager>:8088
-copy the examples jar to the user home.
+copy the examples jar to the user home, the examples can be found in the hadoop_stack folder `/hadoop_stack/hadoop/share/hadoop/mapreduce/`
 
 *Test installation*:
 ```
@@ -210,15 +220,21 @@ yarn jar hadoop-mapreduce-examples-3.3.1.jar pi \
   tar -xzvf hbase-x.y-z.tar.gz -C /hadoop_stack
   ```
 - set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+    - check examples in `config_examples` folder.
 - set a `hmaster` file with the master node name
-- set the variables in the setup script `hadoop_stack_installation -> deploy_hbase.sh`
-  - HBASE_ENV
-  
+- set the variables in the setup script `deploy_hbase.sh` 
+    ```
+    vim hadoop_stack_installation/deploy_hbase.sh
+    ```
+  And set the environemnt variables:.
+  - **HBASE_ENV:** path to the `hbase-env.sh` configuration file. ex:/hadoop_stack/hbase/conf/hbase-env.sh
+ 
 - run the script:
   ```
   bash hadoop_stack_installation/deploy_hbase.sh hosts_file
   ```
-    - it copies the folder to all nodes
+  this script:
+    - copies the folder to all nodes
     - sets the permissions groups and environment variables
     - creates the hbase user to run hbase
     - sets passwordless ssh between nodes for hbase user
@@ -249,7 +265,7 @@ scan 'test'
   tar -xzvf hive-x.y-z.tar.gz -C /hadoop_stack
   ```
 - set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
- 
+    - check examples in `config_examples` folder. 
 - set mysql as the hive metadata database following the [tutorial](https://data-flair.training/blogs/configure-hive-metastore-to-mysql)
     - sudo apt-get install mysql-server on the manager_node
     - download, install and copy mysql-connector-java:
@@ -259,11 +275,12 @@ scan 'test'
         ```
       copy the jar file usually in /usr/share/java/ to $HIVE_HOME/lib
 
-- Edit configuration in hive-site.xml
-        - javax.jdo.option.ConnectionURL: jdbc:mysql://host/hcatalog?createDatabaseIfNotExist=true
-        - javax.jdo.option.ConnectionUserName: <hive_mysql_username> 
-        - javax.jdo.option.ConnectionPassword: <hive_mysql_password>
-        - javax.jdo.option.ConnectionDriverName: com.mysql.cj.jdbc.Driver
+- Edit configuration in hive-site.xml in the config folder
+
+  - javax.jdo.option.ConnectionURL: jdbc:mysql://host/hcatalog?createDatabaseIfNotExist=true
+  - javax.jdo.option.ConnectionUserName: <hive_mysql_username> 
+  - javax.jdo.option.ConnectionPassword: <hive_mysql_password>
+  - javax.jdo.option.ConnectionDriverName: com.mysql.cj.jdbc.Driver
 - Create mysql table `hcatalog`, user with password in mysql 
     ```
       create database 'hcatalog';
@@ -284,9 +301,13 @@ scan 'test'
 - change guava jar on hive from the one in hadoop:
   - remove guava-x.y.z.jar on $HIVE_HOME/lib
   - copy $HADOOP_HOME/share/hadoop/hdfs/lib/guava-x.y.z.jar to $HIVE_HOME/lib
-   
-- set the variables in the setup script `hadoop_stack_installation -> deploy_hive.sh`
-  - HIVE_ENV
+- set the variables in the setup script `deploy_hive.sh` 
+    ```
+    vim hadoop_stack_installation/deploy_hive.sh
+    ```
+  And set the environemnt variables:.
+  - **HBASE_ENV:** path to the `hive-env.sh` configuration file. ex:/hadoop_stack/hive/conf/hive-env.sh
+  
 
 - run the script:
   ```
@@ -297,7 +318,7 @@ scan 'test'
     - creates the hive user to run hiveserver2
     - creates the schema in mysql database
 
-- Start hbase
+- Start hive
 ```
     bash manage_stack/manage_hive.sh start
 ```
@@ -306,7 +327,7 @@ scan 'test'
 in any node, run
 
 ```
-beeline -u jdbc:hive2://master1.internal:10000 -n ubuntu
+beeline -u jdbc:hive2://<master private hostname>:10000 -n ubuntu
 show databases;
 create database test;
 use test;
@@ -319,10 +340,10 @@ select * from htest;
 ```
 
 #### Create user to work with the stack
+If you need to create a user to work with the stack, this script will do it in all the nodes
+```
 bash manage_stack/create_user.sh hosts_file
-
-
-
+```
 
 [comment]: <> (***)
 
