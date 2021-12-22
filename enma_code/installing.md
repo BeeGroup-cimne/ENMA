@@ -24,30 +24,30 @@ During this tutorial, some concepts will be used. In this section you can find a
 - **private hostname:** Is a hostname we will choose for the node for internal use. 
 
 ### Prepare the nodes 
-##### 1. set the root password for all nodes and log-in as the root user. Continue the tutorial as root on all nodes
-    ```bash
-    sudo passwd
-    sudo su -
-    ```
+###### 1. set the root password for all nodes and log-in as the root user. Continue the tutorial as root on all nodes
+```bash
+sudo passwd
+sudo su -
+```
 
-##### 2. create public key in the admin node for the root user and configure the passwordless ssh in all hosts.
-    *on admin node*
+###### 2. create public key in the admin node for the root user and configure the passwordless ssh in all hosts.
+*on admin node*
 
-    ```bash
-    ssh-keygen -t rsa -m PEM
-    cat /root/.ssh/id_rsa.pub
-    ```
+```bash
+ssh-keygen -t rsa -m PEM
+cat /root/.ssh/id_rsa.pub
+```
 
-    *on each host node (including admin)*
+*on each host node (including admin)*
 
-    ```bash
-    echo "<master_key>" >> /root/.ssh/authorized_keys
-    ```
+```bash
+echo "<master_key>" >> /root/.ssh/authorized_keys
+```
 
-##### 3. check if the nodes are connected on the fast private network if it exists in your cluster.
-      ```
-      ip address
-      ```
+###### 3. check if the nodes are connected on the fast private network if it exists in your cluster.
+```bash
+ip address
+```
    *Check the interface on the fast private network interface to use latter*
 
    If the state of the is DOWN, verify how to connect to the fast private network according to your linux distribution.
@@ -74,34 +74,34 @@ During this tutorial, some concepts will be used. In this section you can find a
    >   netplan apply
    >   ```
 
-##### 4. mount the HDD of the nodes if external drives are available
-    ```bash
-    lsblk # to list all hdd
-    fdisk /dev/<drive name> #create primary partition with 'n' and 'p' and save with 'w' 
-    mkfs.ext3 /dev/<drive partition name> # to format the partition
-    mkdir /hdd
-    mount /dev/<drive partition name> /hdd
-    e2label /dev/<drive partition name> hdd
-    ```
-    update the `vim /etc/fstab` file
-    ```
-    LABEL=hdd       /hdd            ext3    defaults        1 2
-    ```
+###### 4. mount the HDD of the nodes if external drives are available
+```bash
+lsblk # to list all hdd
+fdisk /dev/<drive name> #create primary partition with 'n' and 'p' and save with 'w' 
+mkfs.ext3 /dev/<drive partition name> # to format the partition
+mkdir /hdd
+mount /dev/<drive partition name> /hdd
+e2label /dev/<drive partition name> hdd
+```
+update the `vim /etc/fstab` file
+```
+LABEL=hdd       /hdd            ext3    defaults        1 2
+```
     
-##### 5. create a `hosts_file` file with all cluster hosts in the admin node:
-    ```
-    <fast private ip> <private hostname>
-    <fast private ip> <private hostname>
-    ```
-    *Include all nodes in the file (the admin node must be the first one)*
-    >TIP: the private hostname can be any name to identify the nodes internally. ex: `<node_name>.internal
+###### 5. create a `hosts_file` file with all cluster hosts in the admin node:
+```
+<fast private ip> <private hostname>
+<fast private ip> <private hostname>
+```
+*Include all nodes in the file (the admin node must be the first one)*
+>TIP: the private hostname can be any name to identify the nodes internally. ex: `<node_name>.internal
 
-##### 6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node. Choose a folder in the root home `/root`
+###### 6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node. Choose a folder in the root home `/root`
 
    - run the setup utility that will prepare each node for hadoop with bash
-      ```
-      bash enma_setup/set_nodes.sh hosts_file
-      ```
+   ```bash
+   bash enma_setup/set_nodes.sh hosts_file
+   ```
 
    - During execution, some information will be asked by the script to properly set the cluster
     
@@ -128,7 +128,7 @@ During this tutorial, some concepts will be used. In this section you can find a
        - connect to the vpn
        - configure the firewall to block all connections but port 22 in external ip
 
-##### 7. reboot system to prepare for installing hadoop:
+###### 7. reboot system to prepare for installing hadoop:
 
 You can use the `run_on_nodes.sh` script
 ```bash 
@@ -145,53 +145,53 @@ mkdir -p /hadoop_stack
 ```
 
 #### Install HADOOP Core
-- download stable hadoop release binary from oficial [webpage](https://hadoop.apache.org/):
-- untar the file in the `hadoop_stack` folder
-  ```
-  tar -xzvf hadoop-x.y-z.tar.gz -C /hadoop_stack
-  ```
-- set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+###### download stable hadoop release binary from oficial [webpage](https://hadoop.apache.org/):
+###### untar the file in the `hadoop_stack` folder
+```bash
+tar -xzvf hadoop-x.y-z.tar.gz -C /hadoop_stack
+```
+###### set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
     - check examples in `config_examples` folder.
-- set a `masters` file with the master information:
-    ```
-    <user> <binary> <service> <node> ex: hdfs bin/hdfs namenode master1
-    ```
+###### set a `masters` file with the master information:
+```
+<user> <binary> <service> <node> ex: hdfs bin/hdfs namenode master1
+```
   - **user:** the user that will run the service
   - **binary:** the binary to use to run the service [hdfs, yarn]
   - **service:** the master service to run [namenode, secondarynamenode, resourcemanager, proxyserver]
   - **node:** the private hostname of the node that will run the service
     
-- set the variables in the setup script `deploy_hadoop.sh` 
-    ```
-    vim hadoop_stack_installation/deploy_hadoop.sh
-    ```
+###### set the variables in the setup script `deploy_hadoop.sh` 
+```bash
+vim hadoop_stack_installation/deploy_hadoop.sh
+```
   And set the environemnt variables:.
   - **HADOOP_STACK_DIR:** folder created for the hadoop_stack. ex: /hadoop_stack
   - **HADOOP_ENV:** path to the `hadoop-env.sh` configuration file. ex:/hadoop_stack/hadoop/etc/hadoop/hadoop-env.sh
   - **HADOOP_DATA_DIR:** Folder to store the hadoop data. ex: /hdd
-- run the script:
-  ```
-  bash hadoop_stack_installation/deploy_hadoop.sh hosts_file
-  ```
-  this script:
-    - copies the hadoop installation to all nodes
-    - sets the permissions groups and environment variables
-    - creates the users to run hadoop
+###### run the script:
+```bash
+bash hadoop_stack_installation/deploy_hadoop.sh hosts_file
+```
+this script:
+- copies the hadoop installation to all nodes
+- sets the permissions groups and environment variables
+- creates the users to run hadoop
 
-- On master node running namenode, format the hdfs
-  ```
-  su hdfs -c "$HADOOP_HOME/bin/hdfs namenode -format"
-  ```
-- Start hadoop
-  ```
-  bash manage_stack/manage_hadoop.sh start
-  ```
-- Change permissions and owners:
-  ```
-  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -mkdir /tmp"
-  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chown -R hdfs:hadoop /"
-  su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chmod -R 0775 /" 
-  ```
+###### On master node running namenode, format the hdfs
+```bash
+su hdfs -c "$HADOOP_HOME/bin/hdfs namenode -format"
+```
+###### Start hadoop
+```bash
+bash manage_stack/manage_hadoop.sh start
+```
+###### Change permissions and owners:
+```bash
+su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -mkdir /tmp"
+su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chown -R hdfs:hadoop /"
+su hdfs -c "$HADOOP_HOME/bin/hdfs dfs -chmod -R 0775 /" 
+```
 #### Test installation
 check the web interfaces:
 <namenode>:9870
@@ -199,11 +199,11 @@ check the web interfaces:
 copy the examples jar to the user home, the examples can be found in the hadoop_stack folder `/hadoop_stack/hadoop/share/hadoop/mapreduce/`
 
 *Test installation*:
-```
+```bash
 hadoop jar hadoop-mapreduce-examples-3.3.1.jar pi 10 1000
 ```
 *Test docker*:
-```
+```bash
 MOUNTS="$HADOOP_HOME:$HADOOP_HOME:ro,/etc/passwd:/etc/passwd:ro,/etc/group:/etc/group:ro"
 IMAGE_ID="library/openjdk:8"
 yarn jar hadoop-mapreduce-examples-3.3.1.jar pi \
@@ -217,32 +217,32 @@ yarn jar hadoop-mapreduce-examples-3.3.1.jar pi \
 ```
 
 #### Install HBASE
-- download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):
-- untar the file in the `hadoop_stack` folder
-  ```
-  tar -xzvf hbase-x.y-z.tar.gz -C /hadoop_stack
-  ```
-- set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
-    - check examples in `config_examples` folder.
-- set a `hmaster` file with the master node name
-- set the variables in the setup script `deploy_hbase.sh` 
-    ```
-    vim hadoop_stack_installation/deploy_hbase.sh
-    ```
+###### download stable hbase release binary from oficial [webpage](https://hbase.apache.org/):
+###### untar the file in the `hadoop_stack` folder
+```bash
+tar -xzvf hbase-x.y-z.tar.gz -C /hadoop_stack
+```
+###### set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+- check examples in `config_examples` folder.
+###### set a `hmaster` file with the master node name
+###### set the variables in the setup script `deploy_hbase.sh` 
+```bash
+vim hadoop_stack_installation/deploy_hbase.sh
+```
   And set the environemnt variables:.
   - **HBASE_ENV:** path to the `hbase-env.sh` configuration file. ex:/hadoop_stack/hbase/conf/hbase-env.sh
  
-- run the script:
-  ```
-  bash hadoop_stack_installation/deploy_hbase.sh hosts_file
-  ```
-  this script:
-    - copies the folder to all nodes
-    - sets the permissions groups and environment variables
-    - creates the hbase user to run hbase
-    - sets passwordless ssh between nodes for hbase user
+###### run the script:
+```bash
+bash hadoop_stack_installation/deploy_hbase.sh hosts_file
+```
+this script:
+- copies the folder to all nodes
+- sets the permissions groups and environment variables
+- creates the hbase user to run hbase
+- sets passwordless ssh between nodes for hbase user
     
-- Start hbase
+###### Start hbase
 ```
     bash manage_stack/manage_hbase.sh start
 ```
@@ -262,74 +262,78 @@ scan 'test'
 ```
 
 ### Install HIVE
-- download stable hadoop release binary from oficial [webpage](https://hive.apache.org/):
-- untar the file in the `hadoop_stack` folder
-  ```
-  tar -xzvf hive-x.y-z.tar.gz -C /hadoop_stack
-  ```
-- set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
-    - check examples in `config_examples` folder. 
-- set mysql as the hive metadata database following the [tutorial](https://data-flair.training/blogs/configure-hive-metastore-to-mysql)
-    - sudo apt-get install mysql-server on the manager_node
-    - download, install and copy mysql-connector-java:
-      ```bash
-        wget url
-        dpkg -i path_to_deb_file
-        ```
-      copy the jar file usually in /usr/share/java/ to $HIVE_HOME/lib
+###### download stable hadoop release binary from oficial [webpage](https://hive.apache.org/):
+###### untar the file in the `hadoop_stack` folder
+```
+tar -xzvf hive-x.y-z.tar.gz -C /hadoop_stack
+```
+###### set the configuration of the service. Configurations are very personal. It is better to follow the oficial instructions.
+- check examples in `config_examples` folder. 
+###### set mysql as the hive metadata database following the [tutorial](https://data-flair.training/blogs/configure-hive-metastore-to-mysql)
+- sudo apt-get install mysql-server on the manager_node
+- download, install and copy mysql-connector-java:
+```bash
+    wget url
+    dpkg -i path_to_deb_file
+```
+- copy the jar file usually in /usr/share/java/ to $HIVE_HOME/lib
 
-- Edit configuration in hive-site.xml in the config folder
+###### Edit configuration in hive-site.xml in the config folder
+- javax.jdo.option.ConnectionURL: jdbc:mysql://host/hcatalog?createDatabaseIfNotExist=true
+- javax.jdo.option.ConnectionUserName: <hive_mysql_username> 
+- javax.jdo.option.ConnectionPassword: <hive_mysql_password>
+- javax.jdo.option.ConnectionDriverName: com.mysql.cj.jdbc.Driver
 
-  - javax.jdo.option.ConnectionURL: jdbc:mysql://host/hcatalog?createDatabaseIfNotExist=true
-  - javax.jdo.option.ConnectionUserName: <hive_mysql_username> 
-  - javax.jdo.option.ConnectionPassword: <hive_mysql_password>
-  - javax.jdo.option.ConnectionDriverName: com.mysql.cj.jdbc.Driver
-- Create mysql table `hcatalog`, user with password in mysql 
-    ```
-      create database 'hcatalog';
-      create 'user'@'%' identified by 'password';
-      grant all privileges on hcatalog.* to hive;
-    ```
-- Edit mysql configuration to listen to all IP
-    ```
-       vim /etc/mysql/mysql.conf.d/mysqld.cnf 
-       # set
-       bind-address            = 0.0.0.0
-       mysqlx-bind-address     = 0.0.0.0     
-    ```
+###### Create mysql table `hcatalog`, user with password in mysql 
+```sql
+create database 'hcatalog';
+create 'user'@'%' identified by 'password';
+grant all privileges on hcatalog.* to hive;
+```
+
+###### Edit mysql configuration to listen to all IP
+- open mysql config file
+```bash
+vim /etc/mysql/mysql.conf.d/mysqld.cnf 
+```
+- Edit the important configuration fields
+```
+bind-address            = 0.0.0.0
+mysqlx-bind-address     = 0.0.0.0     
+```
 - Restart mysql
-  ```
-  systemctl restart mysql
-  ```
-- change guava jar on hive from the one in hadoop:
-  - remove guava-x.y.z.jar on $HIVE_HOME/lib
-  - copy $HADOOP_HOME/share/hadoop/hdfs/lib/guava-x.y.z.jar to $HIVE_HOME/lib
+```
+systemctl restart mysql
+```
+###### change guava jar on hive from the one in hadoop:
+- remove guava-x.y.z.jar on $HIVE_HOME/lib
+- copy $HADOOP_HOME/share/hadoop/hdfs/lib/guava-x.y.z.jar to $HIVE_HOME/lib
 - set the variables in the setup script `deploy_hive.sh` 
-    ```
-    vim hadoop_stack_installation/deploy_hive.sh
-    ```
-  And set the environemnt variables:.
+```bash
+  vim hadoop_stack_installation/deploy_hive.sh
+```
+- And set the environemnt variables:.
   - **HBASE_ENV:** path to the `hive-env.sh` configuration file. ex:/hadoop_stack/hive/conf/hive-env.sh
   
-
-- run the script:
-  ```
-  bash hadoop_stack_installation/deploy_hive.sh hosts_file
-  ```
-    - it copies the folder to all nodes
-    - sets the permissions groups and environment variables
-    - creates the hive user to run hiveserver2
-    - creates the schema in mysql database
-
-- Start hive
+###### run the script:
+```bash
+bash hadoop_stack_installation/deploy_hive.sh hosts_file
 ```
+- This script
+  - copies the folder to all nodes
+  - sets the permissions groups and environment variables
+  - creates the hive user to run hiveserver2
+  - creates the schema in mysql database
+
+###### Start hive
+```bash
     bash manage_stack/manage_hive.sh start
 ```
 #### Test installation
 
 in any node, run
 
-```
+```hiveql
 beeline -u jdbc:hive2://<master private hostname>:10000 -n ubuntu
 show databases;
 create database test;
@@ -350,12 +354,12 @@ bash manage_stack/create_user.sh hosts_file
 ### INSTALL KAFKA
 By now, we are going to set the kafka in a single server, thus the instructions are just related for a single node
 https://kafka.apache.org/quickstart
-1. set up the node installing required packages `kafka_installation/set_node.sh`
-2. mount the external HDD if available: [documentation](#4-mount-the-hdd-of-the-nodes-if-external-drives-are-available)
-3. download and untar kafka
-4. configure kafka
+###### 1. set up the node installing required packages `kafka_installation/set_node.sh`
+###### 2. mount the external HDD if available: [documentation](#4-mount-the-hdd-of-the-nodes-if-external-drives-are-available)
+###### 3. download and untar kafka
+###### 4. configure kafka
    1. edit `server.properties` and `zookeeper.properties` set servers to listen on the private fast interface
-5. configure ufw
+###### 5. configure ufw
 ```bash
 ufw default deny incoming
 ufw default allow outgoing
@@ -363,7 +367,7 @@ ufw allow ssh
 ufw allow in on <private fast interface>
 ufw --force enable
 ```
-6. start kafka
+###### 6. start kafka
 ```bash
-
+bash manage_stack/manage_stack.sh start
 ```
