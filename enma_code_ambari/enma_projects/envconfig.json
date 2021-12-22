@@ -1,9 +1,0 @@
-{
-  "broker": {
-    "user": "",
-    "password": "",
-    "host": "",
-    "vhost": "",
-    "port": 5672
-  }
-}

@@ -24,13 +24,13 @@ During this tutorial, some concepts will be used. In this section you can find a
 - **private hostname:** Is a hostname we will choose for the node for internal use. 
 
 ### Prepare the nodes 
-1. set the root password for all nodes and log-in as the root user. Continue the tutorial as root on all nodes
+##### 1. set the root password for all nodes and log-in as the root user. Continue the tutorial as root on all nodes
     ```bash
     sudo passwd
     sudo su -
     ```
 
-2. create public key in the admin node for the root user and configure the passwordless ssh in all hosts.
+##### 2. create public key in the admin node for the root user and configure the passwordless ssh in all hosts.
     *on admin node*
 
     ```bash
@@ -44,7 +44,7 @@ During this tutorial, some concepts will be used. In this section you can find a
     echo "<master_key>" >> /root/.ssh/authorized_keys
     ```
 
-3. check if the nodes are connected on the fast private network if it exists in your cluster.
+##### 3. check if the nodes are connected on the fast private network if it exists in your cluster.
       ```
       ip address
       ```
@@ -74,7 +74,7 @@ During this tutorial, some concepts will be used. In this section you can find a
    >   netplan apply
    >   ```
 
-4. mount the HDD of the nodes if external drives are available
+##### 4. mount the HDD of the nodes if external drives are available
     ```bash
     lsblk # to list all hdd
     fdisk /dev/<drive name> #create primary partition with 'n' and 'p' and save with 'w' 
@@ -88,7 +88,7 @@ During this tutorial, some concepts will be used. In this section you can find a
     LABEL=hdd       /hdd            ext3    defaults        1 2
     ```
     
-5. create a `hosts_file` file with all cluster hosts in the admin node:
+##### 5. create a `hosts_file` file with all cluster hosts in the admin node:
     ```
     <fast private ip> <private hostname>
     <fast private ip> <private hostname>
@@ -96,7 +96,7 @@ During this tutorial, some concepts will be used. In this section you can find a
     *Include all nodes in the file (the admin node must be the first one)*
     >TIP: the private hostname can be any name to identify the nodes internally. ex: `<node_name>.internal
 
-6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node. Choose a folder in the root home `/root`
+##### 6. copy the [enma_setup directpry](enma_code/enma_setup) to the admin node. Choose a folder in the root home `/root`
 
    - run the setup utility that will prepare each node for hadoop with bash
       ```
@@ -128,11 +128,14 @@ During this tutorial, some concepts will be used. In this section you can find a
        - connect to the vpn
        - configure the firewall to block all connections but port 22 in external ip
 
-7. reboot system to prepare for installing hadoop:
-    ```bash 
-    tac hosts_file > hosts_file_rev
-    bash enma_setup/run_on_nodes.sh hosts_file_rev reboot
-   ```
+##### 7. reboot system to prepare for installing hadoop:
+
+You can use the `run_on_nodes.sh` script
+```bash 
+tac hosts_file > hosts_file_rev
+bash enma_setup/run_on_nodes.sh hosts_file_rev reboot
+```
+
 
 ### Install HADOOP STACK:
 To safely install hadoop stack applications, create a new folder `hadoop_stack` that will contain all the hadoop_stack binary. 
@@ -344,131 +347,23 @@ If you need to create a user to work with the stack, this script will do it in a
 ```
 bash manage_stack/create_user.sh hosts_file
 ```
-
-[comment]: <> (***)
-
-[comment]: <> (## Add new nodes to cluster)
-
-[comment]: <> (1. set the root password for the new nodes)
-
-[comment]: <> (```bash)
-
-[comment]: <> (sudo passwd)
-
-[comment]: <> (su -)
-
-[comment]: <> (```)
-
-[comment]: <> (2. add public key and configure the passwordless ssh in the new hosts.)
-
-[comment]: <> (*on admin node*)
-
-[comment]: <> (```bash)
-
-[comment]: <> (cat /root/.ssh/id_rsa.pub)
-
-[comment]: <> (```)
-
-[comment]: <> (*on each new host node*)
-
-[comment]: <> (```bash)
-
-[comment]: <> (echo/cat master_key >>/root/.ssh/authorized_keys)
-
-[comment]: <> (```)
-
-[comment]: <> (3. connect the node to the private network)
-
-[comment]: <> (```bash)
-
-[comment]: <> (ip link # list all ip interfaces)
-
-[comment]: <> (ip address # check connected interfaces)
-
-[comment]: <> (ifconfig <int> <private address> up # force connection to the ip address)
-
-[comment]: <> (```)
-
-[comment]: <> (4. update the file with the new cluster hosts in the admin node:)
-
-[comment]: <> (```)
-
-[comment]: <> (<ip> <hostname>)
-
-[comment]: <> (<ip> <hostname>)
-
-[comment]: <> (```)
-
-[comment]: <> (Include all nodes in the script &#40;admin, master and workers&#41;)
-
-[comment]: <> (5. run the set_nodes.sh utility)
-
-[comment]: <> (```bash)
-
-[comment]: <> (. enma_setup/set_nodes.sh hosts_file )
-
-[comment]: <> (```)
-
-[comment]: <> (This script has the utility to set-up all the hosts through ssh)
-
-[comment]: <> (1. backup the /etc/hosts file in /opt/hosts_utils.)
-
-[comment]: <> (2. adds all the hosts of the file passed as parameter into /etc/hosts)
-
-[comment]: <> (3. sets the hostname of the nodes)
-
-[comment]: <> (4. install the required packages)
-
-[comment]: <> (6. connect to <ip>:8080 to configure the new node)
-
-
-[comment]: <> (# Description of enma_setup)
-
-[comment]: <> (This package contains scripts to manage the cluster nodes from the master. )
-
-[comment]: <> (Following is a brief description on the scripts)
-
-[comment]: <> (1. hosts_utils:)
-
-[comment]: <> (    package containing the required scripts to manage the /etc/hosts)
-
-[comment]: <> (    1. enma_setup/hosts_utilities/set_up.sh: Run on the setup of the node, it copies the /etc/hosts as a backup to add more hosts later.)
-
-[comment]: <> (    2. enma_setup/hosts_utilities/update_hosts.sh: Updates the original hosts with the new hosts files passed as parameter.)
-
-[comment]: <> (2. install.sh )
-
-[comment]: <> (    install all required packages for setting up the ambari server )
-
-[comment]: <> (3. set_nodes.sh)
-
-[comment]: <> (    main installation script that:)
-
-[comment]: <> (    1. updates the /etc/hosts to all nodes)
-
-[comment]: <> (    2. sets the hostname of all nodes)
-
-[comment]: <> (    3. installs the packages in "install.sh")
-
-[comment]: <> (4. run_on_nodes.sh)
-
-[comment]: <> (    utility to run commands on all nodes)
-
-
-[comment]: <> (## install hadoop stack)
-
-[comment]: <> (#mkdir hadoop_stack)
-
-[comment]: <> (#while read app)
-
-[comment]: <> (#do)
-
-[comment]: <> (#  url_app=`echo $app|cut -d" " -f1`)
-
-[comment]: <> (#	filename=`basename $url_app`)
-
-[comment]: <> (#  wget -P hadoop_stack $url_app;)
-
-[comment]: <> (#  tar -xzvf hadoop_stack/$filename -C hadoop_stack)
-
-[comment]: <> (#done < hdp_version)
+### INSTALL KAFKA
+By now, we are going to set the kafka in a single server, thus the instructions are just related for a single node
+https://kafka.apache.org/quickstart
+1. set up the node installing required packages `kafka_installation/set_node.sh`
+2. mount the external HDD if available: [documentation](#4-mount-the-hdd-of-the-nodes-if-external-drives-are-available)
+3. download and untar kafka
+4. configure kafka
+   1. edit `server.properties` and `zookeeper.properties` set servers to listen on the private fast interface
+5. configure ufw
+```bash
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow ssh
+ufw allow in on <private fast interface>
+ufw --force enable
+```
+6. start kafka
+```bash
+
+```
