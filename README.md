@@ -39,6 +39,7 @@ Following is the structure of this documentation.
 - Arian Huapaya  - ahuapaya@cimne.upc.edu
 - Andreu Marí - amari@cimne.upc.edu
 - Gerard Laguna - glaguna@cimne.upc.edu
+- Stoyan Danov - sdanov@cimne.upc.edu
   
-Copyright (c) 2024 Jose Manuel Broto, Gerard Mor, Jordi Cipriano, Eloi Gabaldón, Josep Mayos, Jordi Carbonel, Daniel Pérez, Nuria Salvador, Arian Huapaya, Andreu Marí, Gerard Laguna
+Copyright (c) 2024 Jose Manuel Broto, Gerard Mor, Jordi Cipriano, Eloi Gabaldón, Josep Mayos, Jordi Carbonel, Daniel Pérez, Nuria Salvador, Arian Huapaya, Andreu Marí, Gerard Laguna, Stoyan Danov 
    
