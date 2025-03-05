@@ -26,4 +26,19 @@ Following is the structure of this documentation.
 
 [comment]: <> (3. ~~**[Documentation for module developers]&#40;developers/developers.md&#41;**~~ &#40;Not Updated&#41;)
 4. **[Installing architecture](enma_code/installing.md)**
+
+## Authors
+- Jose Manuel Broto - jmbroto@cimne.upc.edu
+- Gerard Mor - gmor@cimne.upc.edu
+- Jordi Cipriano - cipriano@cimne.upc.edu
+- Eloi Gabaldón - egabaldon@cimne.upc.edu
+- Josep Mayos - jmayos@cimne.upc.edu
+- Jordi Carbonel - jordi@cimne.upc.edu
+- Daniel Pérez - sanchez@cimne.upc.edu
+- Nuria Salvador - nsalvador@cimne.upc.edu
+- Arian Huapaya  - ahuapaya@cimne.upc.edu
+- Andreu Marí - amari@cimne.upc.edu
+- Gerard Laguna - glaguna@cimne.upc.edu
+  
+Copyright (c) 2024 Jose Manuel Broto, Gerard Mor, Jordi Cipriano, Eloi Gabaldón, Josep Mayos, Jordi Carbonel, Daniel Pérez, Nuria Salvador, Arian Huapaya, Andreu Marí, Gerard Laguna
    
