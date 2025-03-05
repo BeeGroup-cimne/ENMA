@@ -35,7 +35,7 @@ Following is the structure of this documentation.
 - Josep Mayos - jmayos@cimne.upc.edu
 - Jordi Carbonel - jordi@cimne.upc.edu
 - Daniel Pérez - sanchez@cimne.upc.edu
-- Nuria Salvador - nsalvador@cimne.upc.edu
+- Núria Salvador - nsalvador@cimne.upc.edu
 - Arian Huapaya  - ahuapaya@cimne.upc.edu
 - Andreu Marí - amari@cimne.upc.edu
 - Gerard Laguna - glaguna@cimne.upc.edu
