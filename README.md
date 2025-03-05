@@ -33,10 +33,10 @@ Following is the structure of this documentation.
 - Jordi Cipriano - cipriano@cimne.upc.edu
 - Eloi Gabaldón - egabaldon@cimne.upc.edu
 - Josep Mayos - jmayos@cimne.upc.edu
-- Jordi Carbonel - jordi@cimne.upc.edu
+- Jordi Carbonell - jordi@cimne.upc.edu
 - Daniel Pérez - sanchez@cimne.upc.edu
 - Núria Salvador - nsalvador@cimne.upc.edu
-- Arian Huapaya  - ahuapaya@cimne.upc.edu
+- Arián Huapaya  - ahuapaya@cimne.upc.edu
 - Andreu Marí - amari@cimne.upc.edu
 - Gerard Laguna - glaguna@cimne.upc.edu
 - Stoyan Danov - sdanov@cimne.upc.edu
